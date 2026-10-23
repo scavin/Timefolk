@@ -10,13 +10,13 @@ class Router: ObservableObject {
     @Published var activeRoute: Route = .mainView
 
     func setActiveRoute(to route: Route) {
-        withAnimation(.default) {
+        withAnimation(CommandLine.arguments.contains("-ui-testing") ? nil : .default) {
             activeRoute = route
         }
     }
 
     func cleanActiveRoute() {
-        withAnimation(.default) {
+        withAnimation(CommandLine.arguments.contains("-ui-testing") ? nil : .default) {
             activeRoute = .mainView
         }
     }

@@ -5,12 +5,11 @@ import SwiftUI
 
 struct MainView: View {
     @StateObject private var fetcher = Fetcher()
-    @State private var sortOrder: SortOrder = .timeAscending
-    @State private var sortedEntries: [Entry] = []
+    @AppStorage("sortOrder") private var sortOrder: SortOrder = .timeAscending
+    @State private var operationError: String?
     @Environment(\.database) var database: AppDatabase
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var router: Router
-    @State private var currentDate = Date()
     @State private var isAtBottom: Bool = false
     @State private var showSlider: Bool = false
     @State var timeOffset: Double = 0
@@ -24,20 +23,22 @@ struct MainView: View {
             } else {
                 ScrollView(.vertical) {
                     LazyVStack(spacing: 0) {
-                        ForEach(sortedEntries) { entry in
-                            EntryRow(entry: entry, timeOffset: $timeOffset)
-                                .contextMenu {
-                                    Button("Edit") {
-                                        router.setActiveRoute(to: .editTimeZone(entryId: entry.id))
+                        TimelineView(.periodic(from: Calendar.current.dateInterval(of: .minute, for: .now)?.start ?? .now, by: 60)) { context in
+                            ForEach(sortedEntries) { entry in
+                                EntryRow(entry: entry, currentDate: context.date, timeOffset: $timeOffset)
+                                    .contextMenu {
+                                        Button("Edit") {
+                                            router.setActiveRoute(to: .editTimeZone(entryId: entry.id))
+                                        }
+                                        Button("Delete", role: .destructive) {
+                                            deleteEntry(entry)
+                                        }
                                     }
-                                    Button("Delete", role: .destructive) {
-                                        deleteEntry(entry)
-                                    }
-                                }
 
-                                .id(entry.id)
+                                    .id(entry.id)
+                            }
+                            .animation(.easeInOut(duration: 0.1), value: sortedEntries.count)
                         }
-                        .animation(.easeInOut(duration: 0.1), value: sortedEntries.count)
                         Color.clear
                             .frame(height: 2)
                             .onAppear {
@@ -63,28 +64,30 @@ struct MainView: View {
         }
         .frame(maxHeight: .infinity)
         .padding(.top, 6)
-        .onAppear {
-            sortEntries()
-        }
-        .onChange(of: sortOrder) { _ in
-            sortEntries()
-        }
-        .onChange(of: fetcher.entries) { _ in
-            sortEntries()
+        .alert("Could not delete time zone", isPresented: Binding(
+            get: { operationError != nil },
+            set: { if !$0 { operationError = nil } }
+        )) {
+            Button("OK") { operationError = nil }
+        } message: {
+            Text(operationError ?? "")
         }
         .task {
+            guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil,
+                  !CommandLine.arguments.contains("-ui-testing") else { return }
             let id = PostHogSDK.shared.getAnonymousId()
             PostHogSDK.shared.identify(id, userProperties: ["email": UserDefaults.standard.string(forKey: "userEmail") ?? ""])
         }
 
     }
 
-    private func sortEntries() {
-        switch sortOrder {
-        case .timeAscending:
-            sortedEntries = fetcher.entries.sorted { $0.timeDifference.hours < $1.timeDifference.hours }
-        case .timeDescending:
-            sortedEntries = fetcher.entries.sorted { $0.timeDifference.hours > $1.timeDifference.hours }
+    private var sortedEntries: [Entry] {
+        let now = Date().addingTimeInterval(timeOffset * 3600)
+        return fetcher.entries.sorted {
+            let left = $0.offsetDifference(at: now)
+            let right = $1.offsetDifference(at: now)
+            if left == right { return $0.id < $1.id }
+            return sortOrder == .timeAscending ? left < right : left > right
         }
     }
 
@@ -95,8 +98,9 @@ struct MainView: View {
                     let fetchedEntry = try Entry.fetchOne(db, id: entry.id)
                     try fetchedEntry?.delete(db)
                 }
+                PhotoStorage().remove(entry.photoData)
             } catch {
-                print("Can't delete entry \(error)")
+                operationError = error.localizedDescription
             }
         }
     }
@@ -152,9 +156,6 @@ struct EntryTimeSlider: View {
     }
 
     private func formattedTime() -> String {
-        let calendar = Calendar.current
-        let now = Date()
-
         let formatter = DateFormatter()
 
         // Get the system's locale

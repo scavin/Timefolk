@@ -63,8 +63,11 @@ struct SocialMediaInput: View {
 
                             if !Task.isCancelled {
                                 do {
-                                    let imageUrl = "https://unavatar.io/\(platform.lowercased())/\(value.lowercased())"
+                                    let username = value.trimmingCharacters(in: .whitespacesAndNewlines).trimmingCharacters(in: CharacterSet(charactersIn: "@"))
+                                    let escaped = username.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed.subtracting(CharacterSet(charactersIn: "/?#"))) ?? ""
+                                    let imageUrl = "https://unavatar.io/\(platform.lowercased())/\(escaped)"
                                     let fetchedImage = try await simpleImageFetch(from: imageUrl)
+                                    guard !Task.isCancelled else { return }
                                     await MainActor.run {
                                         self.image = NSImage(data: fetchedImage)
                                     }
@@ -78,6 +81,7 @@ struct SocialMediaInput: View {
                     }
                 }
         }
+        .onDisappear { debounceTask?.cancel() }
     }
 
     func simpleImageFetch(from urlString: String) async throws -> Data {
@@ -87,11 +91,12 @@ struct SocialMediaInput: View {
 
         let (data, response) = try await URLSession.shared.data(from: url)
 
-        guard let httpResponse = response as? HTTPURLResponse else {
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200 ... 299).contains(httpResponse.statusCode),
+              NSImage(data: data) != nil else {
             throw URLError(.badServerResponse)
         }
 
-        image = NSImage(data: data)
         return data
     }
 }

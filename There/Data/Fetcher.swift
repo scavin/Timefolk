@@ -2,7 +2,7 @@ import Combine
 import Foundation
 import GRDB
 
-enum SortOrder {
+enum SortOrder: String {
     case timeAscending
     case timeDescending
 }
@@ -25,12 +25,4 @@ class Fetcher: ObservableObject {
         )
     }
 
-    func sortEntries(by order: SortOrder) {
-        switch order {
-        case .timeAscending:
-            entries.sort { $0.timeDifference.hours < $1.timeDifference.hours }
-        case .timeDescending:
-            entries.sort { $0.timeDifference.hours > $1.timeDifference.hours }
-        }
-    }
 }

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C0DE00000000000000000001 /* GRDB in Test Frameworks */ = {isa = PBXBuildFile; productRef = C38562322C8719CB00858D54 /* GRDB */; };
 		C3560CD82C9AADBA009C7EBA /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = C3560CD72C9AADBA009C7EBA /* PostHog */; };
 		C357E5D12C877376003F9943 /* MenuBarExtraAccess in Frameworks */ = {isa = PBXBuildFile; productRef = C357E5D02C877376003F9943 /* MenuBarExtraAccess */; };
 		C38562332C8719CB00858D54 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = C38562322C8719CB00858D54 /* GRDB */; };
@@ -35,33 +36,9 @@
 		C325D0EF2C85A9600049EFC8 /* ThereUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ThereUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		C398A8592C89D62E00891388 /* Exceptions for "There" folder in "There" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"Views/CLAuthorizationStatus+Description.swift ",
-			);
-			target = C325D0D32C85A95F0049EFC8 /* There */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
-/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-		C398A85A2C89D62E00891388 /* Exceptions for "There" folder in "Compile Sources" phase from "There" target */ = {
-			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
-			buildPhase = C325D0D02C85A95F0049EFC8 /* Sources */;
-			membershipExceptions = (
-				"Views/CLAuthorizationStatus+Description.swift ",
-			);
-		};
-/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		C325D0D62C85A95F0049EFC8 /* There */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				C398A8592C89D62E00891388 /* Exceptions for "There" folder in "There" target */,
-				C398A85A2C89D62E00891388 /* Exceptions for "There" folder in "Compile Sources" phase from "There" target */,
-			);
 			path = There;
 			sourceTree = "<group>";
 		};
@@ -92,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0DE00000000000000000001 /* GRDB in Test Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -179,6 +157,7 @@
 			);
 			name = ThereTests;
 			packageProductDependencies = (
+				C38562322C8719CB00858D54 /* GRDB */,
 			);
 			productName = ThereTests;
 			productReference = C325D0E52C85A9600049EFC8 /* ThereTests.xctest */;
@@ -240,10 +219,9 @@
 			mainGroup = C325D0CB2C85A95F0049EFC8;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				C38562312C8719CB00858D54 /* XCLocalSwiftPackageReference "../../Downloads/GRDB.swift-master" */,
-				C357E5CF2C877376003F9943 /* XCLocalSwiftPackageReference "../../Downloads/MenuBarExtraAccess-main" */,
-				C3560CD32C9AACFB009C7EBA /* XCLocalSwiftPackageReference "../../Downloads/posthog-ios-main" */,
-				CD8311052C99A18A008EEF3A /* XCRemoteSwiftPackageReference "Sparkle" */,
+				C38562312C8719CB00858D54 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
+				C357E5CF2C877376003F9943 /* XCRemoteSwiftPackageReference "MenuBarExtraAccess" */,
+				C3560CD32C9AACFB009C7EBA /* XCRemoteSwiftPackageReference "posthog-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C325D0D52C85A95F0049EFC8 /* Products */;
@@ -441,9 +419,9 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = There/There.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "\"There/Preview Content\"";
-				DEVELOPMENT_TEAM = 2487AN8AL4;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -451,30 +429,17 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "The app needs access to your location to provide location-based services";
-				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
-				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 2.0;
+				MARKETING_VERSION = 2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = pm.there.There;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "macosx xros xrsimulator";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 7;
-				XROS_DEPLOYMENT_TARGET = 2.0;
 			};
 			name = Debug;
 		};
@@ -486,9 +451,9 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = There/There.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "\"There/Preview Content\"";
-				DEVELOPMENT_TEAM = 2487AN8AL4;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -496,30 +461,17 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "The app needs access to your location to provide location-based services";
-				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
-				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 2.0;
+				MARKETING_VERSION = 2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = pm.there.There;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "macosx xros xrsimulator";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 7;
-				XROS_DEPLOYMENT_TARGET = 2.0;
 			};
 			name = Release;
 		};
@@ -529,20 +481,17 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 2487AN8AL4;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
 				MACOSX_DEPLOYMENT_TARGET = 14;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = pm.there.ThereTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/There.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/There";
-				XROS_DEPLOYMENT_TARGET = 2.0;
 			};
 			name = Debug;
 		};
@@ -552,20 +501,17 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 2487AN8AL4;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
 				MACOSX_DEPLOYMENT_TARGET = 14;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = pm.there.ThereTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/There.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/There";
-				XROS_DEPLOYMENT_TARGET = 2.0;
 			};
 			name = Release;
 		};
@@ -574,20 +520,17 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 2487AN8AL4;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
 				MACOSX_DEPLOYMENT_TARGET = 14;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = pm.there.ThereUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
 				TEST_TARGET_NAME = There;
-				XROS_DEPLOYMENT_TARGET = 2.0;
 			};
 			name = Debug;
 		};
@@ -596,20 +539,17 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 2487AN8AL4;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
 				MACOSX_DEPLOYMENT_TARGET = 14;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = pm.there.ThereUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
 				TEST_TARGET_NAME = There;
-				XROS_DEPLOYMENT_TARGET = 2.0;
 			};
 			name = Release;
 		};
@@ -654,28 +594,29 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		C3560CD32C9AACFB009C7EBA /* XCLocalSwiftPackageReference "../../Downloads/posthog-ios-main" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = "../../Downloads/posthog-ios-main";
-		};
-		C357E5CF2C877376003F9943 /* XCLocalSwiftPackageReference "../../Downloads/MenuBarExtraAccess-main" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = "../../Downloads/MenuBarExtraAccess-main";
-		};
-		C38562312C8719CB00858D54 /* XCLocalSwiftPackageReference "../../Downloads/GRDB.swift-master" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = "../../Downloads/GRDB.swift-master";
-		};
-/* End XCLocalSwiftPackageReference section */
-
 /* Begin XCRemoteSwiftPackageReference section */
-		CD8311052C99A18A008EEF3A /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+		C3560CD32C9AACFB009C7EBA /* XCRemoteSwiftPackageReference "posthog-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			repositoryURL = "https://github.com/PostHog/posthog-ios";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.6.4;
+				kind = exactVersion;
+				version = 3.92.2;
+			};
+		};
+		C357E5CF2C877376003F9943 /* XCRemoteSwiftPackageReference "MenuBarExtraAccess" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/orchetect/MenuBarExtraAccess";
+			requirement = {
+				kind = exactVersion;
+				version = 1.3.1;
+			};
+		};
+		C38562312C8719CB00858D54 /* XCRemoteSwiftPackageReference "GRDB.swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/groue/GRDB.swift";
+			requirement = {
+				kind = exactVersion;
+				version = 7.11.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -683,15 +624,17 @@
 /* Begin XCSwiftPackageProductDependency section */
 		C3560CD72C9AADBA009C7EBA /* PostHog */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = C3560CD32C9AACFB009C7EBA /* XCLocalSwiftPackageReference "../../Downloads/posthog-ios-main" */;
+			package = C3560CD32C9AACFB009C7EBA /* XCRemoteSwiftPackageReference "posthog-ios" */;
 			productName = PostHog;
 		};
 		C357E5D02C877376003F9943 /* MenuBarExtraAccess */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = C357E5CF2C877376003F9943 /* XCRemoteSwiftPackageReference "MenuBarExtraAccess" */;
 			productName = MenuBarExtraAccess;
 		};
 		C38562322C8719CB00858D54 /* GRDB */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = C38562312C8719CB00858D54 /* XCRemoteSwiftPackageReference "GRDB.swift" */;
 			productName = GRDB;
 		};
 /* End XCSwiftPackageProductDependency section */

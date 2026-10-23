@@ -40,7 +40,7 @@ struct AppDatabase {
 // MARK: - Database Configuration
 
 extension AppDatabase {
-    private static let sqlLogger = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "SQL")
+    private static let sqlLogger = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "pm.there.There", category: "SQL")
 
     /// Returns a database configuration suited for `PlayerRepository`.
     ///
@@ -91,12 +91,6 @@ extension AppDatabase {
     private var migrator: DatabaseMigrator {
         var migrator = DatabaseMigrator()
 
-        #if DEBUG
-            // Speed up development by nuking the database when migrations change
-            // See <https://swiftpackageindex.com/groue/grdb.swift/documentation/grdb/migrations>
-            migrator.eraseDatabaseOnSchemaChange = true
-        #endif
-
         // Migrations for future application versions will be inserted here:
         migrator.registerMigration("add entry") { db in
             try db.create(table: Entry.databaseTableName) { t in
@@ -123,11 +117,17 @@ extension AppDatabase {
     /// the database.
     enum ValidationError: LocalizedError {
         case missingName
+        case invalidTimeZone
+        case invalidPhoto
 
         var errorDescription: String? {
             switch self {
             case .missingName:
                 return "Please provide a name"
+            case .invalidTimeZone:
+                return "Please select a valid time zone."
+            case .invalidPhoto:
+                return "The selected photo could not be saved. Please choose another image."
             }
         }
     }

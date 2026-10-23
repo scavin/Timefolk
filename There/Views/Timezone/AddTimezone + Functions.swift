@@ -26,39 +26,20 @@ extension AddTimezone {
     }
 
     func saveEntry() {
-        let fileName = UUID().uuidString + ".png"
-        let fileURL = getApplicationSupportDirectory().appendingPathComponent(fileName)
-
-        if let tiffData = image?.tiffRepresentation,
-           let bitmapImage = NSBitmapImageRep(data: tiffData),
-           let pngData = bitmapImage.representation(using: .png, properties: [:]) {
-            do {
-                try pngData.write(to: fileURL)
-            } catch {
-                print("Failed to save image: \(error)")
-            }
-        }
-
         do {
-            try database.dbWriter.write { db in
-                let entry = Entry(
-                    id: Int64.random(in: 1 ... 99999),
-                    type: !countryEmoji.isEmpty && image == nil ? .place : .person,
-                    name: name,
-                    city: city,
-                    timezoneIdentifier: selectedTimeZone?.identifier ?? "",
-                    flag: image == nil ? countryEmoji : "",
-                    photoData: image != nil ? fileURL.absoluteString : nil
-                )
-
-                try entry.save(db)
-            }
+            let entry = Entry(
+                type: !countryEmoji.isEmpty && image == nil ? .place : .person,
+                name: name.trimmingCharacters(in: .whitespacesAndNewlines),
+                city: city,
+                timezoneIdentifier: selectedTimeZone?.identifier ?? "",
+                flag: image == nil ? countryEmoji : nil
+            )
+            try database.saveEntry(entry, image: image)
+            router.cleanActiveRoute()
+            resetForm()
         } catch {
-            print("Failed to save entry \(error)")
+            errorMessage = error.localizedDescription
         }
-
-        router.cleanActiveRoute()
-        resetForm()
     }
 
     private func resetForm() {
@@ -73,7 +54,4 @@ extension AddTimezone {
         selectedTimeZone = nil
     }
 
-    private func getApplicationSupportDirectory() -> URL {
-        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-    }
 }

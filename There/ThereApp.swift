@@ -36,15 +36,18 @@ struct ThereApp: App {
             }(NSImage(named: "appIcon")!)
 
             Image(nsImage: image)
+                .accessibilityLabel("There")
                 .onAppear {
-                    if UserDefaults.standard.bool(forKey: "hasCompletedInitialSetup") == false {
+                    if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil,
+                       !CommandLine.arguments.contains("-ui-testing"),
+                       UserDefaults.standard.bool(forKey: "hasCompletedInitialSetup") == false {
                         openWindow(id: "init")
                     }
                 }
                 .foregroundColor(.primary)
         }
-        .menuBarExtraStyle(.window)
         .menuBarExtraAccess(isPresented: $appState.menuBarViewIsPresented)
+        .menuBarExtraStyle(.window)
         .windowResizability(.contentSize)
 
         WindowGroup("init", id: "init") {
@@ -85,16 +88,18 @@ class AppState: ObservableObject {
     }
 
     func hideMenu() {
-        menuBarViewIsPresented = true
+        menuBarViewIsPresented = false
     }
 }
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_: Notification) {
+        guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil,
+              !CommandLine.arguments.contains("-ui-testing") else { return }
         let POSTHOG_API_KEY = "phc_XZFRnJFd8RVNegex9sLKplgz8KCFxGyLZwxh5usmoig"
         let POSTHOG_HOST = "https://eu.i.posthog.com"
 
-        let config = PostHogConfig(apiKey: POSTHOG_API_KEY, host: POSTHOG_HOST)
+        let config = PostHogConfig(projectToken: POSTHOG_API_KEY, host: POSTHOG_HOST)
 
         PostHogSDK.shared.setup(config)
     }

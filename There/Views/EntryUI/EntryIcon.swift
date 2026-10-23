@@ -3,6 +3,7 @@ import SwiftUI
 
 struct EntryIcon: View {
     let entry: Entry
+    var date: Date = Date()
     @Environment(\.colorScheme) var scheme
     @Environment(\.database) var database
     @State private var useClockIcon: Bool = false
@@ -19,7 +20,7 @@ struct EntryIcon: View {
         Group {
             if let data = entry.photoData, !data.isEmpty {
                 photoIcon(data: data)
-            } else if let flag = entry.flag {
+            } else if let flag = entry.flag, !flag.isEmpty {
                 placeIcon
             } else {
                 defaultIcon
@@ -28,11 +29,7 @@ struct EntryIcon: View {
         .overlay(alignment: .bottomTrailing) {
             timeIcon
         }
-        .onAppear {
-            if entry.flag == nil || entry.flag!.isEmpty {
-                searchForFlag()
-            }
-        }
+
     }
 
     private var placeIcon: some View {
@@ -93,7 +90,7 @@ struct EntryIcon: View {
     }
 
     private var timeIcon: some View {
-        Image(entry.timeIcon)
+        Image(entry.dayPeriod(at: date).rawValue)
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(width: 14, height: 14)
@@ -106,23 +103,4 @@ struct EntryIcon: View {
             .padding(.trailing, -3)
     }
 
-    func searchForFlag() {
-        let geocoder = CLGeocoder()
-        geocoder.geocodeAddressString(entry.city) { placemarks, _ in
-            if let placemark = placemarks?.first, let timezone = placemark.timeZone {
-                Task {
-                    do {
-                        try await database.dbWriter.write { db in
-                            var entry = try Entry.fetchOne(db, id: entry.id)
-                            let countryEmoji = Utils.shared.getCountryEmoji(for: placemark.isoCountryCode ?? "")
-                            entry?.flag = countryEmoji.isEmpty ? "🌍" : countryEmoji
-                            try entry?.update(db)
-                        }
-                    } catch {
-                        print("Can't find flag \(error)")
-                    }
-                }
-            }
-        }
-    }
 }

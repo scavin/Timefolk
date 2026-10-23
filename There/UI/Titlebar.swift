@@ -21,6 +21,7 @@ struct Titlebar: View {
                     }
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Back")
 
             switch router.activeRoute {
             case .addTimezone:

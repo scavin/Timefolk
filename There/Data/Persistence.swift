@@ -6,6 +6,10 @@ extension AppDatabase {
     static let shared = makeShared()
 
     private static func makeShared() -> AppDatabase {
+        if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil ||
+            CommandLine.arguments.contains("-ui-testing") {
+            return empty()
+        }
         do {
             // Apply recommendations from
             // <https://swiftpackageindex.com/groue/grdb.swift/documentation/grdb/databaseconnections>

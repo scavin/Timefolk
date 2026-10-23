@@ -72,3 +72,9 @@ playground.xcworkspace
 # Other
 *.log
 *.sqlite
+
+# Keep shared Xcode configuration and the dependency lockfile reproducible.
+!There.xcodeproj/
+!There.xcodeproj/project.xcworkspace/xcshareddata/
+!There.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
+!There.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved

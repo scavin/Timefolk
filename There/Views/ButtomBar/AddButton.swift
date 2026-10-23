@@ -9,6 +9,7 @@ struct AddButton: View {
         CompactButton(title: "Add") {
             router.setActiveRoute(to: .addTimezone)
         }
+        .accessibilityIdentifier("timezone.add")
     }
 }
 

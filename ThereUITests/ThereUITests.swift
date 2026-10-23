@@ -1,68 +1,40 @@
-//  ThereUITests.swift
-//  ThereUITests
-//
-//  Created by Dena Sohrabi on 9/2/24.
-//
-
 import XCTest
 
+@MainActor
 final class ThereUITests: XCTestCase {
-    let app = XCUIApplication()
+    private let app = XCUIApplication()
 
     override func setUpWithError() throws {
         continueAfterFailure = false
+        app.launchArguments = ["-ui-testing"]
         app.launch()
+        app.activate()
     }
 
     override func tearDownWithError() throws {
-        // Terminate the app after each test
         app.terminate()
     }
 
-    func printAccessibleElements() {
-        let allElements = app.descendants(matching: .any)
-        for element in allElements.allElementsBoundByIndex {
-            print("Element: \(element.debugDescription)")
-        }
-    }
-
-    @MainActor
-    func testUIElementsExistence() throws {
-        // Print all accessible elements
-        print("Printing all accessible elements:")
-        printAccessibleElements()
-
-        // Check for specific element types
-        print("\nSearching for specific element types:")
-        let searchFields = app.searchFields.allElementsBoundByIndex
-        print("Search Fields: \(searchFields.map { $0.debugDescription })")
-
-        let textFields = app.textFields.allElementsBoundByIndex
-        print("Text Fields: \(textFields.map { $0.debugDescription })")
-
-        let buttons = app.buttons.allElementsBoundByIndex
-        print("Buttons: \(buttons.map { $0.debugDescription })")
-
-        let tables = app.tables.allElementsBoundByIndex
-        print("Tables: \(tables.map { $0.debugDescription })")
-
-        // Try to find any input field
-        let possibleInputFields = app.descendants(matching: .any).matching(NSPredicate(format: "type == 'XCUIElementTypeTextField' OR type == 'XCUIElementTypeSearchField'"))
-        print("\nPossible Input Fields:")
-        for field in possibleInputFields.allElementsBoundByIndex {
-            print(field.debugDescription)
-        }
-
-        // Assert that we found at least one possible input field
-        XCTAssertTrue(possibleInputFields.count > 0, "No input fields found in the app")
-    }
-
-    @MainActor
-    func testLaunchPerformance() throws {
-        if #available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 7.0, *) {
-            measure(metrics: [XCTApplicationLaunchMetric()]) {
-                XCUIApplication().launch()
-            }
-        }
+    func testAddAndEditTibo() throws {
+        let menu = app.statusItems.firstMatch
+        XCTAssertTrue(menu.waitForExistence(timeout: 10))
+        menu.click()
+        let add = app.buttons["timezone.add"]
+        XCTAssertTrue(add.waitForExistence(timeout: 5))
+        add.click()
+        let tiboPreset = app.buttons["timezone.tibo"]
+        XCTAssertTrue(tiboPreset.waitForExistence(timeout: 5))
+        tiboPreset.click()
+        let save = app.buttons["timezone.save"]
+        XCTAssertTrue(save.isEnabled)
+        save.click()
+        let tibo = app.staticTexts["Tibo"]
+        XCTAssertTrue(tibo.waitForExistence(timeout: 5))
+        XCTAssertEqual(app.staticTexts.matching(identifier: "Tibo").count, 1)
+        tibo.click()
+        XCTAssertTrue(app.staticTexts["Edit Time Zone"].waitForExistence(timeout: 5))
+        app.buttons["timezone.save"].click()
+        XCTAssertTrue(tibo.waitForExistence(timeout: 5))
+        XCTAssertEqual(app.staticTexts.matching(identifier: "Tibo").count, 1)
     }
 }

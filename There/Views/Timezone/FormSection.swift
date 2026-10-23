@@ -16,15 +16,34 @@ struct FormSection: View {
     @State private var username = ""
     @State private var debounceTask: Task<Void, Never>?
     var isEditing: Bool = false
+    var saveError: String?
     let saveEntry: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
+            if !isEditing {
+                SecondaryButton(title: "🕒 Tibo time zone") {
+                    let preset = TimeZoneSearchResult.tibo
+                    name = preset.title
+                    city = "PST (UTC−08:00)"
+                    selectedTimeZone = preset.identifier.flatMap { TimeZone(identifier: $0) }
+                    countryEmoji = "🕒"
+                    image = nil
+                    showError = false
+                }
+                .accessibilityIdentifier("timezone.tibo")
+                Text("Codex reset · PST (UTC−08:00)\nFixed offset, no daylight saving")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .frame(width: 200, alignment: .leading)
+                    .padding(.bottom, 12)
+            }
+
             StyledLabel(title: "Name")
             Input(text: $name, placeholder: "eg. Dena or London Office")
                 .padding(.bottom, 6)
                 .onSubmit {
-                    if !city.isEmpty {
+                    if !city.isEmpty && selectedTimeZone != nil {
                         PostHogSDK.shared.capture("timezone_added")
                         saveEntry()
                     } else {
@@ -44,6 +63,7 @@ struct FormSection: View {
                     CitySearchResults(
                         searchCompleter: searchCompleter,
                         isShowingPopover: $isShowingPopover,
+                        selectedName: $name,
                         selectedCity: $city,
                         selectedTimezone: $selectedTimeZone,
                         countryEmoji: $countryEmoji
@@ -60,6 +80,7 @@ struct FormSection: View {
                     CitySearchResults(
                         searchCompleter: searchCompleter,
                         isShowingPopover: $isShowingPopover,
+                        selectedName: $name,
                         selectedCity: $city,
                         selectedTimezone: $selectedTimeZone,
                         countryEmoji: $countryEmoji
@@ -75,8 +96,15 @@ struct FormSection: View {
                     .transition(.opacity)
             }
 
+            if let saveError {
+                Text(saveError)
+                    .font(.caption)
+                    .foregroundColor(.red)
+                    .frame(width: 200, alignment: .leading)
+            }
+
             PrimaryButton(title: isEditing ? "Update" : "Add", action: {
-                if !city.isEmpty {
+                if !city.isEmpty && selectedTimeZone != nil {
                     saveEntry()
                     PostHogSDK.shared.capture("timezone_added")
                 } else {
@@ -86,8 +114,9 @@ struct FormSection: View {
                 }
 
             })
-            .disabled(city.isEmpty)
-            .opacity(city.isEmpty ? 0.6 : 1)
+            .accessibilityIdentifier("timezone.save")
+            .disabled(city.isEmpty || selectedTimeZone == nil)
+            .opacity(city.isEmpty || selectedTimeZone == nil ? 0.6 : 1)
             .padding(.top, 8)
         }
     }

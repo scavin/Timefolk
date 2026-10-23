@@ -1,0 +1,21 @@
+name: macOS
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Show toolchain
+        run: xcodebuild -version
+      - name: Build and run unit tests
+        run: >-
+          xcodebuild -project There.xcodeproj -scheme There
+          -destination 'platform=macOS' -derivedDataPath build
+          -only-testing:ThereTests CODE_SIGNING_ALLOWED=NO test

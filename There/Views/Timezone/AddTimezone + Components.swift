@@ -121,7 +121,7 @@ struct CitySearchResultRow: View, Equatable {
             VStack(alignment: .leading) {
                 Text(result.title)
 
-                Text(result.subtitle ?? "")
+                Text(result.subtitle)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -141,11 +141,14 @@ struct CitySearchResultRow: View, Equatable {
 struct CitySearchResults: View {
     @ObservedObject var searchCompleter: SearchCompleter
     @Binding var isShowingPopover: Bool
+    @Binding var selectedName: String
     @Binding var selectedCity: String
     @Binding var selectedTimezone: TimeZone?
     @Binding var countryEmoji: String
     @FocusState private var isFocused: Bool
     @State private var selectedIndex: Int = -1
+    @State private var selectionTask: Task<Void, Never>?
+    @State private var selectionError: String?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -163,6 +166,9 @@ struct CitySearchResults: View {
                 .foregroundColor(AdaptiveColors.textColor)
                 .padding(.vertical)
 
+            if let selectionError {
+                Text(selectionError).font(.caption).foregroundColor(.red).padding(.horizontal)
+            }
             ScrollViewReader { proxy in
                 List(searchCompleter.results.indices, id: \.self) { index in
                     let result = searchCompleter.results[index]
@@ -193,6 +199,12 @@ struct CitySearchResults: View {
             }
         }
         .frame(width: 300, height: 400)
+        .onChange(of: searchCompleter.queryFragment) { _ in
+            selectedIndex = -1
+            selectionTask?.cancel()
+            selectionError = nil
+        }
+        .onDisappear { selectionTask?.cancel() }
     }
 
     private func handleKeyEvent(_ event: NSEvent) -> Bool {
@@ -247,72 +259,37 @@ struct CitySearchResults: View {
     }
 
     private func selectCity(_ result: TimeZoneSearchResult) {
-        switch result.type {
-        case .city:
-            selectedCity = "\(result.title), \(result.subtitle)"
-
-            Task {
-                if let timezone = await result.getTimeZone() {
-                    await MainActor.run {
-                        selectedTimezone = timezone
-                        let geocoder = CLGeocoder()
-                        geocoder.geocodeAddressString(result.title) { [self] placemarks, _ in
-                            if let placemark = placemarks?.first, let timezone = selectedTimezone {
-                                countryEmoji = Utils.shared.getCountryEmoji(for: placemark.isoCountryCode ?? "")
-                            }
-                        }
-                    }
-
-                  
-                } else {
-                    await MainActor.run {
-                        fallbackToGeocoding(for: selectedCity)
-                    }
-                }
-            }
-
-        case .abbreviation:
-            selectedCity = result.title
+        selectionTask?.cancel()
+        selectionError = nil
+        if result.type == .preset {
+            if selectedName.isEmpty { selectedName = result.title }
+            selectedCity = "PST (UTC−08:00)"
             selectedTimezone = result.identifier.flatMap { TimeZone(identifier: $0) }
-            countryEmoji = ""
-
-        case .utcOffset:
-            selectedCity = result.title
-            selectedTimezone = result.identifier.flatMap { TimeZone(identifier: $0) }
-            countryEmoji = ""
+            countryEmoji = "🕒"
+            isShowingPopover = false
+            return
         }
-
-        isShowingPopover = false
-    }
-
-    private func fallbackToGeocoding(for address: String) {
-        let geocoder = CLGeocoder()
-        geocoder.geocodeAddressString(address) { [self] placemarks, _ in
-            if let placemark = placemarks?.first, let timezone = placemark.timeZone {
-                selectedTimezone = timezone
-                countryEmoji = Utils.shared.getCountryEmoji(for: placemark.isoCountryCode ?? "")
+        if let identifier = result.identifier, let timezone = TimeZone(identifier: identifier) {
+            selectedCity = result.title
+            selectedTimezone = timezone
+            countryEmoji = result.countryCode.map { Utils.shared.getCountryEmoji(for: $0) } ?? ""
+            isShowingPopover = false
+            return
+        }
+        selectionTask = Task { @MainActor in
+            let timezone = await result.getTimeZone()
+            guard !Task.isCancelled else { return }
+            guard let timezone else {
+                selectionError = "Could not resolve this time zone. Please try another result."
+                return
             }
+            selectedCity = result.subtitle.isEmpty ? result.title : "\(result.title), \(result.subtitle)"
+            selectedTimezone = timezone
+            countryEmoji = result.countryCode.map { Utils.shared.getCountryEmoji(for: $0) } ?? ""
+            isShowingPopover = false
         }
     }
 
-//    private func selectCity(_ result: TimeZoneSearchResult) {
-//
-//        selectedCity = "\(result.title), \(result.subtitle)"
-//        selectedTimezone = result.getTimeZone()
-//
-//        if result.type == .city {
-//            let geocoder = CLGeocoder()
-//            geocoder.geocodeAddressString(selectedCity) { placemarks, _ in
-//                if let placemark = placemarks?.first {
-//                    countryEmoji = Utils.shared.getCountryEmoji(for: placemark.isoCountryCode ?? "")
-//                }
-//            }
-//        } else {
-//            countryEmoji = ""
-//        }
-//
-//        isShowingPopover = false
-//    }
 }
 
 struct CustomTextField: NSViewRepresentable {
@@ -326,9 +303,9 @@ struct CustomTextField: NSViewRepresentable {
         textField.delegate = context.coordinator
         textField.focusRingType = .none
         textField.drawsBackground = true
-        textField.backgroundColor = .white
+        textField.backgroundColor = .textBackgroundColor
         textField.isBordered = false
-        textField.textColor = .black
+        textField.textColor = .labelColor
         return textField
     }
 

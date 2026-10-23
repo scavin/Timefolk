@@ -1,4 +1,3 @@
-import Combine
 import SwiftUI
 
 struct EntryRow: View {
@@ -6,14 +5,12 @@ struct EntryRow: View {
     @State private var isHovered: Bool = false
     @Environment(\.colorScheme) var scheme
     @EnvironmentObject var router: Router
-    @Environment(\.scenePhase) private var scenePhase
-    @State private var currentDate = Date()
-    @State private var timer: Publishers.Autoconnect<Timer.TimerPublisher>?
+    var currentDate: Date = Date()
     @Binding var timeOffset: Double
 
     var body: some View {
         HStack {
-            EntryIcon(entry: entry)
+            EntryIcon(entry: entry, date: currentDate.addingTimeInterval(timeOffset * 3600))
             VStack(alignment: .leading) {
                 Text(entry.name.isEmpty ? entry.city : entry.name)
                     .font(.title3)
@@ -50,17 +47,8 @@ struct EntryRow: View {
                 self.isHovered = isHovered
             }
         }
-        .onReceive(timer ?? Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
-            currentDate = Date()
-        }
         .onTapGesture {
             router.setActiveRoute(to: .editTimeZone(entryId: entry.id))
-        }
-        .onChange(of: scenePhase) { newPhase in
-            updateTimer(for: newPhase)
-        }
-        .onAppear {
-            updateTimer(for: scenePhase)
         }
     }
 
@@ -81,42 +69,15 @@ struct EntryRow: View {
             // Fallback to a default format if generation fails
             formatter.timeStyle = .short
         }
-        let offsetDate = Date().addingTimeInterval(timeOffset * 3600)
+        let offsetDate = currentDate.addingTimeInterval(timeOffset * 3600)
 
         return formatter.string(from: offsetDate)
     }
 
     private func formatTimeDifference() -> String {
-        let userTimeZone = TimeZone.current
-        let entryTimeZone = TimeZone(identifier: entry.timezoneIdentifier) ?? .current
-
-        let userDate = currentDate.addingTimeInterval(TimeInterval(userTimeZone.secondsFromGMT()))
-        let entryDate = currentDate.addingTimeInterval(TimeInterval(entryTimeZone.secondsFromGMT()))
-
-        let difference = Calendar.current.dateComponents([.hour, .minute], from: userDate, to: entryDate)
-
-        let hours = difference.hour ?? 0
-        let minutes = difference.minute ?? 0
-
-        if hours == 0 && minutes == 0 {
-            return "same time"
-        }
-
-        let totalHours = Double(hours) + Double(minutes) / 60.0
-
-        return String(format: "%+.1f hrs", totalHours)
-    }
-
-    private func updateTimer(for phase: ScenePhase) {
-        timer?.upstream.connect().cancel()
-
-        switch phase {
-        case .active:
-            timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-        case .inactive, .background:
-            timer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
-        @unknown default:
-            timer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
-        }
+        let date = currentDate.addingTimeInterval(timeOffset * 3600)
+        let seconds = entry.offsetDifference(at: date)
+        if seconds == 0 { return "same time" }
+        return String(format: "%+.2f hrs", Double(seconds) / 3600)
     }
 }

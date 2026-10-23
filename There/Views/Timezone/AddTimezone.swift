@@ -11,6 +11,7 @@ struct AddTimezone: View {
     @State var image: NSImage?
     @State var name = ""
     @State var city = ""
+    @State var errorMessage: String?
     @State var selectedTimeZone: TimeZone? = nil
     @State var isShowingPopover = false
     @State var countryEmoji = ""
@@ -37,6 +38,7 @@ struct AddTimezone: View {
                 image: $image,
                 showingTGAccountInput: $showingTGAccountInput,
                 showingXAccountInput: $showingXAccountInput,
+                saveError: errorMessage,
                 saveEntry: saveEntry
             )
         }

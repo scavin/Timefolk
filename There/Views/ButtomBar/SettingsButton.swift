@@ -7,7 +7,9 @@ struct SettingsButton: View {
     @EnvironmentObject var appState: AppState
     @Environment(\.database) var database: AppDatabase
     @Environment(\.colorScheme) var scheme
-    @AppStorage("launchAtLogin") private var launchAtLogin = false
+    @State private var launchAtLogin = LoginItem.isEnabled
+    @State private var updatingLoginItem = false
+    @State private var loginItemError: String?
     @Binding var sortOrder: SortOrder
     var backgroundColor: Color {
         if scheme == .dark {
@@ -19,14 +21,24 @@ struct SettingsButton: View {
 
     var body: some View {
         Menu {
-            Toggle("Launch at Login", isOn: $launchAtLogin)
-                .onChange(of: launchAtLogin) { newValue in
-                    if newValue {
-                        installLaunchAgent()
-                    } else {
-                        uninstallLaunchAgent()
+            Toggle("Launch at Login", isOn: Binding(
+                get: { launchAtLogin },
+                set: { enabled in
+                    updatingLoginItem = true
+                    Task { @MainActor in
+                        defer {
+                            launchAtLogin = LoginItem.isEnabled
+                            updatingLoginItem = false
+                        }
+                        do {
+                            try await LoginItem.setEnabled(enabled)
+                        } catch {
+                            loginItemError = error.localizedDescription
+                        }
                     }
                 }
+            ))
+            .disabled(updatingLoginItem)
             Toggle("Ascending order", isOn: Binding(
                 get: { sortOrder == .timeAscending },
                 set: { newValue in
@@ -79,6 +91,15 @@ struct SettingsButton: View {
                 .font(.body)
         }
         .buttonStyle(SettingsButtonStyle())
+        .onAppear { launchAtLogin = LoginItem.isEnabled }
+        .alert("Could not update login item", isPresented: Binding(
+            get: { loginItemError != nil },
+            set: { if !$0 { loginItemError = nil } }
+        )) {
+            Button("OK") { loginItemError = nil }
+        } message: {
+            Text(loginItemError ?? "")
+        }
     }
 
     func openAppleMailComposer(to recipient: String, subject: String? = nil, body: String? = nil) {

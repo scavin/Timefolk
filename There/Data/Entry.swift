@@ -2,7 +2,7 @@ import Foundation
 import GRDB
 import SwiftUI
 
-enum EntryType: String, Codable {
+enum EntryType: String, Codable, Sendable {
     case place
     case person
 }
@@ -17,7 +17,7 @@ enum DayPeriod: String, CaseIterable {
     case night
 }
 
-struct Entry: Codable, Equatable, Identifiable, FetchableRecord, PersistableRecord {
+struct Entry: Codable, Equatable, Identifiable, FetchableRecord, PersistableRecord, Sendable {
     let id: Int64
     var type: EntryType
     var name: String
@@ -30,7 +30,7 @@ struct Entry: Codable, Equatable, Identifiable, FetchableRecord, PersistableReco
         case id, type, name, city, country, timezoneIdentifier, flag, photoData
     }
 
-    init(id: Int64 = Int64.random(in: 1 ... 99999), type: EntryType, name: String, city: String, timezoneIdentifier: String, flag: String? = nil, photoData: String? = nil) {
+    init(id: Int64 = Int64.random(in: 1 ... Int64.max), type: EntryType, name: String, city: String, timezoneIdentifier: String, flag: String? = nil, photoData: String? = nil) {
         self.id = id
         self.type = type
         self.name = name
@@ -46,51 +46,32 @@ struct Entry: Codable, Equatable, Identifiable, FetchableRecord, PersistableReco
         case id, type, name, city, timezoneIdentifier, flag, photoData
     }
 
+    func offsetDifference(at date: Date, relativeTo localTimeZone: TimeZone = .current) -> Int {
+        guard let timeZone = TimeZone(identifier: timezoneIdentifier) else { return 0 }
+        return timeZone.secondsFromGMT(for: date) - localTimeZone.secondsFromGMT(for: date)
+    }
+
+    func dayPeriod(at date: Date) -> DayPeriod {
+        guard let timeZone = TimeZone(identifier: timezoneIdentifier) else { return .night }
+        let hour = Calendar(identifier: .gregorian).dateComponents(in: timeZone, from: date).hour ?? 0
+        switch hour {
+        case 5 ..< 8: return .earlyMorning
+        case 8 ..< 12: return .lateMorning
+        case 12 ..< 15: return .earlyAfternoon
+        case 15 ..< 17: return .lateAfternoon
+        case 17 ..< 19: return .earlyEvening
+        case 19 ..< 22: return .evening
+        default: return .night
+        }
+    }
+
     var timeDifference: (hours: Int, minutes: Int, dayPeriod: DayPeriod) {
-        let currentDate = Date()
-        let calendar = Calendar.current
-
-        // Get the current user's time zone
-        let localTimeZone = TimeZone.current
-
-        // Get the entry's time zone
-        guard let entryTimeZone = TimeZone(identifier: timezoneIdentifier) else {
-            return (0, 0, .night)
-        }
-
-        // Calculate the time difference
-        let differenceInSeconds = entryTimeZone.secondsFromGMT(for: currentDate) - localTimeZone.secondsFromGMT(for: currentDate)
-
-        // Convert seconds to hours and minutes
-        let hours = differenceInSeconds / 3600
-        let minutes = (differenceInSeconds % 3600) / 60
-
-        // Calculate the time in the entry's time zone
-        var entryDateComponents = calendar.dateComponents(in: entryTimeZone, from: currentDate)
-        let entryHour = entryDateComponents.hour ?? 0
-
-        let dayPeriod: DayPeriod
-        switch entryHour {
-        case 5 ..< 8:
-            dayPeriod = .earlyMorning
-        case 8 ..< 12:
-            dayPeriod = .lateMorning
-        case 12 ..< 15:
-            dayPeriod = .earlyAfternoon
-        case 15 ..< 17:
-            dayPeriod = .lateAfternoon
-        case 17 ..< 19:
-            dayPeriod = .earlyEvening
-        case 19 ..< 22:
-            dayPeriod = .evening
-        default:
-            dayPeriod = .night
-        }
-
-        return (hours, minutes, dayPeriod)
+        let now = Date()
+        let difference = offsetDifference(at: now)
+        return (difference / 3600, (difference % 3600) / 60, dayPeriod(at: now))
     }
 
     var timeIcon: String {
-        return timeDifference.dayPeriod.rawValue
+        dayPeriod(at: Date()).rawValue
     }
 }
