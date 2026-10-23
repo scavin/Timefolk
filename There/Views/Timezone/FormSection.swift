@@ -1,4 +1,3 @@
-import PostHog
 import SwiftUI
 import UserNotifications
 
@@ -8,7 +7,6 @@ struct FormSection: View {
     @Binding var selectedTimeZone: TimeZone?
     @Binding var isShowingPopover: Bool
     @StateObject var searchCompleter: SearchCompleter
-    @Binding var countryEmoji: String
     @Binding var image: NSImage?
     @Binding var showingTGAccountInput: Bool
     @Binding var showingXAccountInput: Bool
@@ -17,48 +15,52 @@ struct FormSection: View {
     @State private var debounceTask: Task<Void, Never>?
     var isEditing: Bool = false
     var saveError: String?
+    var onDelete: (() -> Void)? = nil
     let saveEntry: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            if !isEditing {
-                SecondaryButton(title: "🕒 Tibo time zone") {
-                    let preset = TimeZoneSearchResult.tibo
-                    name = preset.title
-                    city = "PST (UTC−08:00)"
-                    selectedTimeZone = preset.identifier.flatMap { TimeZone(identifier: $0) }
-                    countryEmoji = "🕒"
-                    image = nil
-                    showError = false
-                }
-                .accessibilityIdentifier("timezone.tibo")
-                Text("Codex reset · PST (UTC−08:00)\nFixed offset, no daylight saving")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .frame(width: 200, alignment: .leading)
-                    .padding(.bottom, 12)
-            }
-
-            StyledLabel(title: "Name")
-            Input(text: $name, placeholder: "eg. Dena or London Office")
-                .padding(.bottom, 6)
-                .onSubmit {
-                    if !city.isEmpty && selectedTimeZone != nil {
-                        PostHogSDK.shared.capture("timezone_added")
-                        saveEntry()
-                    } else {
-                        withAnimation(.easeIn(duration: 0.1)) {
-                            showError = true
+        VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 6) {
+                StyledLabel(title: "朋友称呼")
+                Input(text: $name, placeholder: "比如：阿杰、伦敦办公室", icon: "person")
+                    .onSubmit {
+                        if !city.isEmpty && selectedTimeZone != nil {
+                            saveEntry()
+                        } else {
+                            withAnimation(TimefolkTheme.Animation.quick) {
+                                showError = true
+                            }
                         }
                     }
-                }
-            if !city.isEmpty {
-                SecondaryButton(title: city) {
-                    withAnimation(.easeOut(duration: 0.1)) {
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
+                StyledLabel(title: "所在城市")
+                
+                Button {
+                    withAnimation(TimefolkTheme.Animation.quick) {
                         showError = false
                     }
                     isShowingPopover = true
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "mappin.and.ellipse")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(city.isEmpty ? .secondary : .accentColor)
+
+                        Text(city.isEmpty ? "选择城市" : city)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(city.isEmpty ? .secondary : .primary)
+                            .lineLimit(1)
+
+                        Spacer()
+
+                        Image(systemName: "chevron.up.chevron.down")
+                            .font(.system(size: 11))
+                            .foregroundColor(.secondary)
+                    }
                 }
+                .buttonStyle(SecondaryButtonStyle())
                 .popover(isPresented: $isShowingPopover) {
                     CitySearchResults(
                         searchCompleter: searchCompleter,
@@ -66,58 +68,70 @@ struct FormSection: View {
                         selectedName: $name,
                         selectedCity: $city,
                         selectedTimezone: $selectedTimeZone,
-                        countryEmoji: $countryEmoji
-                    )
-                }
-            } else {
-                SecondaryButton(title: "Set location / timezone") {
-                    withAnimation(.easeOut(duration: 0.1)) {
-                        showError = false
-                    }
-                    isShowingPopover = true
-                }
-                .popover(isPresented: $isShowingPopover) {
-                    CitySearchResults(
-                        searchCompleter: searchCompleter,
-                        isShowingPopover: $isShowingPopover,
-                        selectedName: $name,
-                        selectedCity: $city,
-                        selectedTimezone: $selectedTimeZone,
-                        countryEmoji: $countryEmoji
+                        image: $image
                     )
                 }
             }
 
             if showError {
-                Text("please select a Location")
-                    .font(.caption)
-                    .foregroundColor(.red)
-                    .fontWeight(.medium)
-                    .transition(.opacity)
+                HStack(spacing: 4) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 11))
+                    Text("请先选好朋友所在城市")
+                        .font(.system(size: 11, weight: .medium))
+                }
+                .foregroundColor(.red)
+                .transition(.opacity)
             }
 
             if let saveError {
-                Text(saveError)
-                    .font(.caption)
-                    .foregroundColor(.red)
-                    .frame(width: 200, alignment: .leading)
+                HStack(spacing: 4) {
+                    Image(systemName: "exclamationmark.circle.fill")
+                        .font(.system(size: 11))
+                    Text(saveError)
+                        .font(.system(size: 11))
+                }
+                .foregroundColor(.red)
             }
 
-            PrimaryButton(title: isEditing ? "Update" : "Add", action: {
-                if !city.isEmpty && selectedTimeZone != nil {
-                    saveEntry()
-                    PostHogSDK.shared.capture("timezone_added")
-                } else {
-                    withAnimation(.easeIn(duration: 0.1)) {
-                        showError = true
+            if isEditing, let onDelete {
+                HStack(spacing: 12) {
+                    Button(role: .destructive) {
+                        onDelete()
+                    } label: {
+                        Text("删除朋友")
+                            .foregroundColor(.red)
                     }
-                }
+                    .buttonStyle(SecondaryButtonStyle())
 
-            })
-            .accessibilityIdentifier("timezone.save")
-            .disabled(city.isEmpty || selectedTimeZone == nil)
-            .opacity(city.isEmpty || selectedTimeZone == nil ? 0.6 : 1)
-            .padding(.top, 8)
+                    PrimaryButton(title: "保存", action: {
+                        if !city.isEmpty && selectedTimeZone != nil {
+                            saveEntry()
+                        } else {
+                            withAnimation(TimefolkTheme.Animation.quick) {
+                                showError = true
+                            }
+                        }
+                    })
+                    .accessibilityIdentifier("timezone.save")
+                    .disabled(city.isEmpty || selectedTimeZone == nil)
+                }
+                .padding(.top, 4)
+            } else {
+                PrimaryButton(title: "添加", action: {
+                    if !city.isEmpty && selectedTimeZone != nil {
+                        saveEntry()
+                    } else {
+                        withAnimation(TimefolkTheme.Animation.quick) {
+                            showError = true
+                        }
+                    }
+                })
+                .accessibilityIdentifier("timezone.save")
+                .disabled(city.isEmpty || selectedTimeZone == nil)
+                .padding(.top, 4)
+            }
         }
+        .padding(.horizontal, 20)
     }
 }

@@ -5,8 +5,7 @@ import SwiftUI
 struct LeftPanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Image("Logo")
-            Text("Hey There!")
+            Text("你好，朋友！")
                 .font(.largeTitle)
                 .fontWeight(.bold)
             DateTimeInfo()
@@ -49,7 +48,7 @@ struct DateTimeLabel: View {
             } else if let text = text {
                 Text(text)
             } else {
-                Text("Invalid input")
+                Text("无效输入")
             }
         }
         .monospaced()

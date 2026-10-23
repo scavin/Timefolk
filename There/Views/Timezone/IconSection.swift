@@ -2,7 +2,6 @@ import SwiftUI
 
 struct IconSection: View {
     @Binding var image: NSImage?
-    @Binding var countryEmoji: String
     @Binding var showingXAccountInput: Bool
     @Binding var showingTGAccountInput: Bool
 
@@ -12,8 +11,7 @@ struct IconSection: View {
     var body: some View {
         VStack {
             IconView(
-                image: $image,
-                countryEmoji: $countryEmoji
+                image: $image
             )
             .padding(.bottom, 6)
         }
@@ -50,53 +48,43 @@ struct SocialMediaInput: View {
     @Binding var debounceTask: Task<Void, Never>?
 
     var body: some View {
-        VStack(alignment: .leading) {
-            StyledLabel(title: platform == "X" ? "Enter an \(platform) username" : "Enter a \(platform) username")
-                .padding(.top, 8)
-            Input(text: $username, placeholder: "eg. dena_sohrabi")
-                .onChange(of: username) { value in
-                    debounceTask?.cancel()
+        VStack(alignment: .leading, spacing: 6) {
+            StyledLabel(title: "输入 \(platform) 用户名")
+                .padding(.top, 4)
+            Input(
+                text: $username,
+                placeholder: platform == "X" ? "如：elonmusk" : "如：durov",
+                icon: "at"
+            )
+            .onChange(of: username) { value in
+                debounceTask?.cancel()
 
-                    if !value.isEmpty {
-                        debounceTask = Task {
-                            try? await Task.sleep(for: .milliseconds(800))
+                let clean = value.trimmingCharacters(in: .whitespacesAndNewlines)
+                    .trimmingCharacters(in: CharacterSet(charactersIn: "@"))
+                guard !clean.isEmpty else {
+                    image = nil
+                    return
+                }
 
-                            if !Task.isCancelled {
-                                do {
-                                    let username = value.trimmingCharacters(in: .whitespacesAndNewlines).trimmingCharacters(in: CharacterSet(charactersIn: "@"))
-                                    let escaped = username.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed.subtracting(CharacterSet(charactersIn: "/?#"))) ?? ""
-                                    let imageUrl = "https://unavatar.io/\(platform.lowercased())/\(escaped)"
-                                    let fetchedImage = try await simpleImageFetch(from: imageUrl)
-                                    guard !Task.isCancelled else { return }
-                                    await MainActor.run {
-                                        self.image = NSImage(data: fetchedImage)
-                                    }
-                                } catch {
-                                    print("Got error \(error)")
+                debounceTask = Task {
+                    try? await Task.sleep(nanoseconds: 600_000_000)
+                    guard !Task.isCancelled else { return }
+
+                    do {
+                        if let fetchedImage = try await SocialAvatarFetcher.fetch(platform: platform, username: clean) {
+                            guard !Task.isCancelled else { return }
+                            await MainActor.run {
+                                withAnimation(TimefolkTheme.Animation.quick) {
+                                    self.image = fetchedImage
                                 }
                             }
                         }
-                    } else {
-                        image = nil
+                    } catch {
+                        // 网络异常或未找到
                     }
                 }
+            }
         }
         .onDisappear { debounceTask?.cancel() }
-    }
-
-    func simpleImageFetch(from urlString: String) async throws -> Data {
-        guard let url = URL(string: urlString) else {
-            throw URLError(.badURL)
-        }
-
-        let (data, response) = try await URLSession.shared.data(from: url)
-
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200 ... 299).contains(httpResponse.statusCode),
-              NSImage(data: data) != nil else {
-            throw URLError(.badServerResponse)
-        }
-
-        return data
     }
 }

@@ -26,6 +26,9 @@ extension AppDatabase {
                 try? fileManager.removeItem(at: directoryURL)
             }
 
+            // 升级与迁移：检测并迁移旧应用标识 pm.there.There 的旧沙盒/本地数据
+            LegacyDataMigrator.migrateIfNeeded(to: appSupportURL)
+
             // Create the database folder if needed
             try fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true)
 
@@ -39,6 +42,9 @@ extension AppDatabase {
 
             // Create the AppDatabase
             let appDatabase = try AppDatabase(dbPool)
+
+            // 首次安装启动时，若数据库为空，默认预置 Tibo 好友时钟
+            seedDefaultEntriesIfNeeded(in: dbPool)
 
             return appDatabase
         } catch {
@@ -67,5 +73,32 @@ extension AppDatabase {
     static func random() -> AppDatabase {
         let appDatabase = empty()
         return appDatabase
+    }
+
+    /// 首次启动或初始化时默认预置 Tibo 好友（仅在全首次安装且未初始化时执行，用户主动删空后不会再复活）
+    static func seedDefaultEntriesIfNeeded(in dbWriter: any DatabaseWriter, userDefaults: UserDefaults = .standard, force: Bool = false) {
+        if !force && userDefaults.bool(forKey: "hasSeededDefaultEntries") {
+            return
+        }
+
+        do {
+            try dbWriter.write { db in
+                let count = try Entry.fetchCount(db)
+                if count == 0 {
+                    let tibo = Entry(
+                        type: .person,
+                        name: "Tibo",
+                        city: "PST (UTC−08:00)",
+                        timezoneIdentifier: "Etc/GMT+8",
+                        flag: nil,
+                        photoData: nil
+                    )
+                    try tibo.insert(db)
+                }
+            }
+            userDefaults.set(true, forKey: "hasSeededDefaultEntries")
+        } catch {
+            NSLog("Failed to seed default entry: \(error)")
+        }
     }
 }

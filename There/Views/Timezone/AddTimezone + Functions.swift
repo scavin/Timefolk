@@ -18,7 +18,6 @@ extension AddTimezone {
                         if let timeZone = placemark.timeZone {
                             self.selectedTimeZone = timeZone
                         }
-                        self.countryEmoji = Utils.shared.getCountryEmoji(for: placemark.isoCountryCode ?? "")
                     }
                 }
             }
@@ -27,12 +26,14 @@ extension AddTimezone {
 
     func saveEntry() {
         do {
+            let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+            let isPlace = image == nil && (trimmedName.isEmpty || trimmedName == city)
             let entry = Entry(
-                type: !countryEmoji.isEmpty && image == nil ? .place : .person,
-                name: name.trimmingCharacters(in: .whitespacesAndNewlines),
+                type: isPlace ? .place : .person,
+                name: trimmedName,
                 city: city,
                 timezoneIdentifier: selectedTimeZone?.identifier ?? "",
-                flag: image == nil ? countryEmoji : nil
+                flag: nil
             )
             try database.saveEntry(entry, image: image)
             router.cleanActiveRoute()
@@ -50,7 +51,6 @@ extension AddTimezone {
         showingTGAccountInput = false
         selectedTimeZone = TimeZone.current
         isShowingPopover = false
-        countryEmoji = ""
         selectedTimeZone = nil
     }
 

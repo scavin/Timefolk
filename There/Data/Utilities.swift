@@ -3,29 +3,40 @@ import SwiftUI
 
 class Utils {
     public static var shared = Utils()
-    func selectPhoto() -> NSImage? {
+    func selectPhoto(completion: @escaping (NSImage?) -> Void) {
         let openPanel = NSOpenPanel()
-        openPanel.allowedContentTypes = [.jpeg, .png]
+        openPanel.allowedContentTypes = [.jpeg, .png, .heic]
         openPanel.allowsMultipleSelection = false
-        openPanel.prompt = "Select Image"
-        if openPanel.runModal() == .OK, let url = openPanel.url {
-            return NSImage(contentsOf: url)
-        } else {
-            return nil
+        openPanel.prompt = "选定"
+        openPanel.level = .floating
+        NSApp.activate(ignoringOtherApps: true)
+        openPanel.begin { response in
+            if response == .OK, let url = openPanel.url, let image = NSImage(contentsOf: url) {
+                completion(image.resizedForAvatar())
+            } else {
+                completion(nil)
+            }
         }
     }
+}
 
-    /// Converts a two-letter country code to its corresponding emoji flag.
-    ///
-    /// - Parameter countryCode: ISO 3166-1 alpha-2 country code.
-    /// - Returns: Emoji representation of the country's flag.
-    func getCountryEmoji(for countryCode: String) -> String {
-        // Unicode offset for Regional Indicator Symbols
-        let base: UInt32 = 127397
+enum SocialAvatarFetcher {
+    static func fetch(platform: String, username: String) async throws -> NSImage? {
+        let clean = username.trimmingCharacters(in: .whitespacesAndNewlines)
+            .trimmingCharacters(in: CharacterSet(charactersIn: "@"))
+        guard !clean.isEmpty else { return nil }
+        guard let escaped = clean.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed.subtracting(CharacterSet(charactersIn: "/?#"))) else { return nil }
+        let normalized = platform.lowercased() == "twitter" ? "x" : platform.lowercased()
+        let urlString = "https://unavatar.io/\(normalized)/\(escaped)"
+        guard let url = URL(string: urlString) else { return nil }
 
-        // Convert each letter to its corresponding Regional Indicator Symbol
-        return countryCode.uppercased().unicodeScalars.map {
-            String(UnicodeScalar(base + $0.value)!)
-        }.joined()
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 10
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse, (200 ... 299).contains(http.statusCode) else {
+            return nil
+        }
+        guard let rawImage = NSImage(data: data) else { return nil }
+        return rawImage.resizedForAvatar(maxPixelSize: 512)
     }
 }

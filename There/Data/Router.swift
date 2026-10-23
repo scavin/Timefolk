@@ -4,6 +4,8 @@ enum Route {
     case addTimezone
     case mainView
     case editTimeZone(entryId: Int64?)
+    case editProfile
+    case about
 }
 
 class Router: ObservableObject {

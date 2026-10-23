@@ -1,0 +1,180 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- macOS App Icon Drop Shadow -->
+    <filter id="macAppShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="28" stdDeviation="32" flood-color="#000000" flood-opacity="0.45" />
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.25" />
+    </filter>
+
+    <!-- Beacon Intense Bloom Glow -->
+    <filter id="beaconBloom" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="18" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="32" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <!-- Canvas Background: Deep Space Obsidian -->
+    <linearGradient id="obsidianBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#111526" />
+      <stop offset="50%" stop-color="#0B0D18" />
+      <stop offset="100%" stop-color="#04050A" />
+    </linearGradient>
+
+    <!-- Top Specular Highlight on Canvas -->
+    <linearGradient id="canvasHighlight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.24" />
+      <stop offset="35%" stop-color="#FFFFFF" stop-opacity="0.04" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- Halo 1: Warm Daylight / Sunrise (Here) -->
+    <linearGradient id="daylightHaloGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE047" />
+      <stop offset="50%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#FB7185" />
+    </linearGradient>
+
+    <!-- Halo 2: Starlight / Midnight (There) -->
+    <linearGradient id="starlightHaloGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="50%" stop-color="#6366F1" />
+      <stop offset="100%" stop-color="#A855F7" />
+    </linearGradient>
+
+    <!-- Bridge Time Ribbon Gradient -->
+    <linearGradient id="bridgeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="50%" stop-color="#EC4899" />
+      <stop offset="100%" stop-color="#38BDF8" />
+    </linearGradient>
+
+    <clipPath id="squircleClip">
+      <rect x="92" y="92" width="840" height="840" rx="200" ry="200" />
+    </clipPath>
+  </defs>
+
+  <!-- ==================== macOS Squircle Canvas ==================== -->
+  <g filter="url(#macAppShadow)">
+    <rect x="92" y="92" width="840" height="840" rx="200" ry="200" fill="url(#obsidianBg)" />
+    <rect x="92" y="92" width="840" height="840" rx="200" ry="200" fill="url(#canvasHighlight)" />
+    <rect x="92.5" y="92.5" width="839" height="839" rx="199.5" ry="199.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1.5" />
+  </g>
+
+  <!-- ==================== Content ==================== -->
+  <g clip-path="url(#squircleClip)">
+
+    <!-- Ambient Background Lighting -->
+    <circle cx="390" cy="460" r="280" fill="#F59E0B" opacity="0.08" filter="url(#softGlow)" />
+    <circle cx="634" cy="564" r="280" fill="#6366F1" opacity="0.10" filter="url(#softGlow)" />
+
+    <!-- ==================== Apple 'Find My' Style Concentric Radar Rings ==================== -->
+    <!-- Center 1 (Daytime Beacon: 390, 460) concentric ripples -->
+    <g opacity="0.22">
+      <circle cx="390" cy="460" r="240" fill="none" stroke="#FDE047" stroke-width="1" stroke-dasharray="3 9" />
+      <circle cx="390" cy="460" r="180" fill="none" stroke="#F59E0B" stroke-width="1.2" />
+      <circle cx="390" cy="460" r="120" fill="none" stroke="#F59E0B" stroke-width="1.5" stroke-opacity="0.6" />
+    </g>
+
+    <!-- Center 2 (Nighttime Beacon: 634, 564) concentric ripples -->
+    <g opacity="0.25">
+      <circle cx="634" cy="564" r="240" fill="none" stroke="#38BDF8" stroke-width="1" stroke-dasharray="3 9" />
+      <circle cx="634" cy="564" r="180" fill="none" stroke="#6366F1" stroke-width="1.2" />
+      <circle cx="634" cy="564" r="120" fill="none" stroke="#818CF8" stroke-width="1.5" stroke-opacity="0.6" />
+    </g>
+
+    <!-- ==================== Dual Tangent / Intersecting Frosted Glass Halos ==================== -->
+    <!-- Halo 1 (Left: You / Here / Sunrise) -->
+    <g>
+      <!-- Base Frosted Halo Fill with glass blur -->
+      <circle cx="390" cy="460" r="180" fill="#F59E0B" fill-opacity="0.04" />
+      <!-- Luminous Frosted Ring -->
+      <circle cx="390" cy="460" r="180" fill="none" stroke="url(#daylightHaloGrad)" stroke-width="3" stroke-opacity="0.8" />
+      <circle cx="390" cy="460" r="178.5" fill="none" stroke="#FFFFFF" stroke-width="1" stroke-opacity="0.5" />
+    </g>
+
+    <!-- Halo 2 (Right: Friend / There / Midnight) -->
+    <g>
+      <!-- Base Frosted Halo Fill -->
+      <circle cx="634" cy="564" r="180" fill="#6366F1" fill-opacity="0.04" />
+      <!-- Luminous Frosted Ring -->
+      <circle cx="634" cy="564" r="180" fill="none" stroke="url(#starlightHaloGrad)" stroke-width="3" stroke-opacity="0.8" />
+      <circle cx="634" cy="564" r="178.5" fill="none" stroke="#FFFFFF" stroke-width="1" stroke-opacity="0.4" />
+    </g>
+
+    <!-- Intersection Lens Glow (Where the two friends' time zones meet) -->
+    <!-- Visual intersection point at approx (512, 512) -->
+    <circle cx="512" cy="512" r="14" fill="#FFFFFF" opacity="0.15" filter="url(#beaconBloom)" />
+
+    <!-- ==================== The Emotional Timezone Bridge Arc ==================== -->
+    <!-- Smooth curved time-arc connecting Beacon 1 and Beacon 2 -->
+    <path d="M 390 460 C 470 380, 554 644, 634 564" fill="none" stroke="url(#bridgeGrad)" stroke-width="3.5" stroke-linecap="round" opacity="0.9" />
+    <path d="M 390 460 C 470 380, 554 644, 634 564" fill="none" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="4 10" opacity="0.8" />
+
+    <!-- ==================== Subtle 24-Hour Timezone Ticks on Halos ==================== -->
+    <g transform="translate(390, 460)" opacity="0.6">
+      <circle cx="0" cy="-180" r="2.5" fill="#FDE047" />
+      <circle cx="180" cy="0" r="2.5" fill="#F59E0B" />
+      <circle cx="0" cy="180" r="2.5" fill="#FB7185" />
+      <circle cx="-180" cy="0" r="2.5" fill="#FDE047" />
+    </g>
+    <g transform="translate(634, 564)" opacity="0.6">
+      <circle cx="0" cy="-180" r="2.5" fill="#38BDF8" />
+      <circle cx="180" cy="0" r="2.5" fill="#A855F7" />
+      <circle cx="0" cy="180" r="2.5" fill="#6366F1" />
+      <circle cx="-180" cy="0" r="2.5" fill="#38BDF8" />
+    </g>
+
+    <!-- ==================== Abstract Friend Beacons (Apple Find My Inspired) ==================== -->
+    <!-- Beacon 1: Left (Sunrise / Here) -->
+    <g transform="translate(390, 460)" filter="url(#beaconBloom)">
+      <!-- Outer Pulsing Glow Ring -->
+      <circle cx="0" cy="0" r="32" fill="#F59E0B" opacity="0.2" />
+      <circle cx="0" cy="0" r="24" fill="#0F172A" stroke="#FDE047" stroke-width="2" />
+      <!-- Inner Jewel / Core -->
+      <circle cx="0" cy="0" r="14" fill="url(#daylightHaloGrad)" />
+      <!-- Crisp Specular Reflection -->
+      <circle cx="-4" cy="-4" r="4.5" fill="#FFFFFF" opacity="0.85" />
+    </g>
+
+    <!-- Beacon 2: Right (Midnight / There) -->
+    <g transform="translate(634, 564)" filter="url(#beaconBloom)">
+      <!-- Outer Pulsing Glow Ring -->
+      <circle cx="0" cy="0" r="32" fill="#38BDF8" opacity="0.2" />
+      <circle cx="0" cy="0" r="24" fill="#0F172A" stroke="#38BDF8" stroke-width="2" />
+      <!-- Inner Jewel / Core -->
+      <circle cx="0" cy="0" r="14" fill="url(#starlightHaloGrad)" />
+      <!-- Crisp Specular Reflection -->
+      <circle cx="-4" cy="-4" r="4.5" fill="#FFFFFF" opacity="0.85" />
+    </g>
+
+    <!-- Subtle Minimalist Status Glyphs (Micro Sun & Micro Moon beside beacons) -->
+    <!-- Micro Sun on Beacon 1 (Sunrise) -->
+    <g transform="translate(330, 400)" opacity="0.75">
+      <circle cx="0" cy="0" r="5" fill="#FDE047" />
+      <line x1="0" y1="-8" x2="0" y2="-6" stroke="#FDE047" stroke-width="1.5" stroke-linecap="round" />
+      <line x1="0" y1="6" x2="0" y2="8" stroke="#FDE047" stroke-width="1.5" stroke-linecap="round" />
+      <line x1="-8" y1="0" x2="-6" y2="0" stroke="#FDE047" stroke-width="1.5" stroke-linecap="round" />
+      <line x1="6" y1="0" x2="8" y2="0" stroke="#FDE047" stroke-width="1.5" stroke-linecap="round" />
+    </g>
+
+    <!-- Micro Crescent Moon on Beacon 2 (Midnight) -->
+    <g transform="translate(694, 624)" opacity="0.75">
+      <path d="M 2 -6 C -3 -6, -6 -2, -6 3 C -6 7, -3 10, 1 11 C -2 9, -3 5, -2 1 C -1 -3, 2 -5, 5 -5.5 C 4.4 -5.8, 3.2 -6, 2 -6 Z" fill="#38BDF8" />
+    </g>
+
+    <!-- Minimalist Brand Identifier Pill "TIMEFOLK" at bottom -->
+    <g transform="translate(512, 805)">
+      <rect x="-80" y="-15" width="160" height="30" rx="15" fill="#0F172A" fill-opacity="0.8" />
+      <rect x="-80" y="-15" width="160" height="30" rx="15" fill="none" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="1" />
+      <text x="0" y="5" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif" font-size="11" font-weight="600" fill="#94A3B8" text-anchor="middle" letter-spacing="1.5">TIMEFOLK</text>
+    </g>
+
+    <!-- Top Diagonal Glass Specular Streak -->
+    <path d="M 92 92 L 650 92 L 250 932 L 92 932 Z" fill="url(#canvasHighlight)" opacity="0.3" pointer-events="none" />
+
+  </g>
+</svg>

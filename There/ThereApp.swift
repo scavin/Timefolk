@@ -7,7 +7,6 @@
 
 import AppKit
 import MenuBarExtraAccess
-import PostHog
 import SwiftUI
 import UserNotifications
 
@@ -22,9 +21,9 @@ struct ThereApp: App {
             ContentView()
                 .environment(\.database, .shared)
                 .frame(width: 320)
-                .frame(minHeight: 300)
+                .frame(minHeight: 350)
                 .frame(maxHeight: 600)
-                .background(Color(NSColor.windowBackgroundColor).opacity(0.78).ignoresSafeArea())
+                .background(.regularMaterial)
                 .environmentObject(appState)
                 .environmentObject(router)
         } label: {
@@ -93,14 +92,5 @@ class AppState: ObservableObject {
 }
 
 class AppDelegate: NSObject, NSApplicationDelegate {
-    func applicationDidFinishLaunching(_: Notification) {
-        guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil,
-              !CommandLine.arguments.contains("-ui-testing") else { return }
-        let POSTHOG_API_KEY = "phc_XZFRnJFd8RVNegex9sLKplgz8KCFxGyLZwxh5usmoig"
-        let POSTHOG_HOST = "https://eu.i.posthog.com"
-
-        let config = PostHogConfig(projectToken: POSTHOG_API_KEY, host: POSTHOG_HOST)
-
-        PostHogSDK.shared.setup(config)
-    }
+    func applicationDidFinishLaunching(_: Notification) {}
 }

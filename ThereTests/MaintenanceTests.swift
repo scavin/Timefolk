@@ -2,7 +2,7 @@ import AppKit
 import Foundation
 import GRDB
 import Testing
-@testable import There
+@testable import Timefolk
 
 @MainActor
 struct MaintenanceTests {
@@ -29,7 +29,7 @@ struct MaintenanceTests {
             DispatchQueue.main.async { continuation.resume() }
         }
         #expect(search.results.count > 1)
-        #expect(search.results.first == .tibo)
+        #expect(search.results.first?.identifier == "Africa/Abidjan")
     }
 
     @Test func minuteOffsetsAndDaylightSavingUseRequestedDate() throws {

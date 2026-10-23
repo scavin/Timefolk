@@ -6,7 +6,7 @@ import SwiftUI
 
 struct IconView: View {
     @Binding var image: NSImage?
-    @Binding var countryEmoji: String
+    @Environment(\.colorScheme) private var scheme
 
     @State private var showPopover = false
     @State private var isDropTargeted = false
@@ -14,12 +14,19 @@ struct IconView: View {
     @State private var showingTGAccountInput = false
     @State private var username = ""
     @State private var debounceTask: Task<Void, Never>?
+    @State private var isHovered = false
 
     var body: some View {
         iconContent
-            .frame(width: 70, height: 70)
+            .frame(width: 64, height: 64)
+            .scaleEffect(isHovered ? 1.04 : 1.0)
+            .animation(TimefolkTheme.Animation.quick, value: isHovered)
+            .onHover { hovering in
+                self.isHovered = hovering
+            }
             .onTapGesture { showPopover = true }
             .popover(isPresented: $showPopover) { popoverContent }
+            .onDrop(of: [.image], isTargeted: $isDropTargeted, perform: handleDrop)
     }
 
     private var iconContent: some View {
@@ -28,33 +35,47 @@ struct IconView: View {
                 Image(nsImage: image)
                     .resizable()
                     .scaledToFill()
+                    .frame(width: 64, height: 64)
                     .clipShape(Circle())
-            } else if !countryEmoji.isEmpty {
-                flagView
+                    .overlay(
+                        Circle()
+                            .strokeBorder(Color.primary.opacity(0.12), lineWidth: 0.5)
+                    )
+                    .shadow(color: Color.black.opacity(0.12), radius: 3, x: 0, y: 1)
             } else {
                 placeholderView
             }
         }
     }
 
-    private var flagView: some View {
-        Circle()
-            .fill(.white)
-            .overlay(Text(countryEmoji).font(.largeTitle))
-    }
-
     private var placeholderView: some View {
         Circle()
-            .fill(.gray.opacity(0.1))
+            .fill(scheme == .dark ? Color.white.opacity(0.06) : Color.black.opacity(0.04))
             .overlay(
-                Image(systemName: "photo.badge.plus")
-                    .font(.title)
-                    .foregroundColor(.gray.opacity(0.8))
+                VStack(spacing: 3) {
+                    Image(systemName: "camera.fill")
+                        .font(.system(size: 18))
+                        .foregroundColor(.accentColor)
+                    Text("头像")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.secondary)
+                }
+            )
+            .overlay(
+                Circle()
+                    .strokeBorder(
+                        Color.primary.opacity(0.15),
+                        style: StrokeStyle(lineWidth: 1, dash: [4, 3])
+                    )
             )
     }
 
     private var popoverContent: some View {
-        VStack {
+        VStack(spacing: 12) {
+            Text("设置头像")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(.primary)
+
             importButtons
 
             if showingXAccountInput {
@@ -69,33 +90,38 @@ struct IconView: View {
                     }
             }
         }
-        .padding()
+        .padding(14)
+        .frame(width: 240)
     }
 
     private var importButtons: some View {
-        HStack(alignment: .center, spacing: 0) {
-            Text("Set from").foregroundColor(.secondary)
+        HStack(spacing: 6) {
             Button("Telegram") {
-                showingXAccountInput = false
-                showingTGAccountInput = true
-            }
-            .buttonStyle(.link)
-            .padding(.horizontal, 2)
-            Text("/").foregroundColor(.secondary).padding(.horizontal, 2)
-            Button("X") {
-                showingTGAccountInput = false
-                showingXAccountInput = true
-            }
-            .buttonStyle(.link)
-            .padding(.horizontal, 2)
-            Text("/").foregroundColor(.secondary).padding(.horizontal, 2)
-            Button("Finder") {
-                let selectedImage = Utils.shared.selectPhoto()
-                DispatchQueue.main.async {
-                    self.image = selectedImage
+                withAnimation(TimefolkTheme.Animation.quick) {
+                    showingXAccountInput = false
+                    showingTGAccountInput = true
                 }
+            }
+            .buttonStyle(SecondaryButtonStyle())
 
-            }.buttonStyle(.link).padding(.horizontal, 2)
+            Button("X") {
+                withAnimation(TimefolkTheme.Animation.quick) {
+                    showingTGAccountInput = false
+                    showingXAccountInput = true
+                }
+            }
+            .buttonStyle(SecondaryButtonStyle())
+
+            Button("本地照片") {
+                Utils.shared.selectPhoto { selectedImage in
+                    guard let selectedImage else { return }
+                    DispatchQueue.main.async {
+                        self.image = selectedImage
+                        self.showPopover = false
+                    }
+                }
+            }
+            .buttonStyle(SecondaryButtonStyle())
         }
     }
 
@@ -113,20 +139,44 @@ struct IconView: View {
     }
 }
 
+// MARK: - CitySearchResultRow
+
 struct CitySearchResultRow: View, Equatable {
     let result: TimeZoneSearchResult
 
     var body: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                Text(result.title)
+        HStack(spacing: 8) {
+            if result == .tibo, let tiboImage = NSImage(named: "tibo") {
+                Image(nsImage: tiboImage)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 20, height: 20)
+                    .clipShape(Circle())
+                    .overlay(
+                        Circle()
+                            .strokeBorder(Color.primary.opacity(0.1), lineWidth: 0.5)
+                    )
+            } else {
+                Image(systemName: result.type == .city ? "mappin.circle.fill" : "globe")
+                    .font(.system(size: 14))
+                    .foregroundColor(result.type == .city ? .accentColor : .secondary)
+                    .frame(width: 20)
+            }
 
-                Text(result.subtitle)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(result.title)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.primary)
+
+                if !result.subtitle.isEmpty {
+                    Text(result.subtitle)
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                }
             }
             Spacer()
         }
+        .padding(.vertical, 4)
         .frame(maxWidth: .infinity)
         .contentShape(Rectangle())
     }
@@ -144,31 +194,44 @@ struct CitySearchResults: View {
     @Binding var selectedName: String
     @Binding var selectedCity: String
     @Binding var selectedTimezone: TimeZone?
-    @Binding var countryEmoji: String
+    var image: Binding<NSImage?>? = nil
     @FocusState private var isFocused: Bool
     @State private var selectedIndex: Int = -1
     @State private var selectionTask: Task<Void, Never>?
     @State private var selectionError: String?
+    @Environment(\.colorScheme) private var scheme
 
     var body: some View {
-        VStack(spacing: 0) {
-            CustomTextField(text: $searchCompleter.queryFragment, placeholder: "Search for a city or timezone", onKeyDown: handleKeyEvent)
-                .textFieldStyle(.roundedBorder)
-                .padding(.horizontal, 6)
-                .frame(width: 280, height: 32)
-                .background(AdaptiveColors.textFieldBackground)
-                .cornerRadius(8)
+        VStack(spacing: 8) {
+            CustomTextField(text: $searchCompleter.queryFragment, placeholder: "搜索城市或时区…", onKeyDown: handleKeyEvent)
+                .padding(.horizontal, 8)
+                .frame(height: 32)
+                .background(
+                    RoundedRectangle(cornerRadius: TimefolkTheme.Radius.medium, style: .continuous)
+                        .fill(
+                            scheme == .dark
+                                ? Color.white.opacity(0.06)
+                                : Color.black.opacity(0.04)
+                        )
+                )
                 .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(isFocused ? .blue : AdaptiveColors.textFieldBorder.opacity(0.5), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: TimefolkTheme.Radius.medium, style: .continuous)
+                        .strokeBorder(
+                            isFocused ? Color.accentColor : TimefolkTheme.Colors.hairlineBorder(colorScheme: scheme),
+                            lineWidth: isFocused ? 1.5 : 0.5
+                        )
                 )
                 .focused($isFocused)
-                .foregroundColor(AdaptiveColors.textColor)
-                .padding(.vertical)
+                .padding(.horizontal, 10)
+                .padding(.top, 10)
 
             if let selectionError {
-                Text(selectionError).font(.caption).foregroundColor(.red).padding(.horizontal)
+                Text(selectionError)
+                    .font(.system(size: 11))
+                    .foregroundColor(.red)
+                    .padding(.horizontal, 10)
             }
+
             ScrollViewReader { proxy in
                 List(searchCompleter.results.indices, id: \.self) { index in
                     let result = searchCompleter.results[index]
@@ -179,26 +242,24 @@ struct CitySearchResults: View {
                         CitySearchResultRow(result: result)
                     }
                     .buttonStyle(.plain)
-                    .listRowBackground(selectedIndex == index ? Color.accentColor.opacity(0.1) : Color.clear)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(
+                        RoundedRectangle(cornerRadius: TimefolkTheme.Radius.small, style: .continuous)
+                            .fill(selectedIndex == index ? Color.accentColor.opacity(0.15) : Color.clear)
+                    )
+                    .listRowInsets(EdgeInsets(top: 2, leading: 6, bottom: 2, trailing: 6))
                     .id(index)
                 }
-                .listStyle(PlainListStyle())
+                .listStyle(.plain)
                 .onChange(of: selectedIndex) { newValue in
                     if newValue >= 0 {
-                        // This handles all scrolling scenarios, including scrolling to the bottom
-                        // when the last item is selected:
-                        // 1. It triggers whenever selectedIndex changes.
-                        // 2. It scrolls to the newly selected item if it's in the list (index >= 0).
-                        // 3. The .center anchor attempts to center the item in the visible area.
-                        // 4. For the last item, this effectively scrolls to the bottom of the list.
-                        // 5. It also ensures that the selected item is always visible, even if it's
-                        //    not the last item.
                         proxy.scrollTo(newValue, anchor: .center)
                     }
                 }
             }
         }
-        .frame(width: 300, height: 400)
+        .frame(width: 300, height: 360)
         .onChange(of: searchCompleter.queryFragment) { _ in
             selectedIndex = -1
             selectionTask?.cancel()
@@ -218,64 +279,31 @@ struct CitySearchResults: View {
         case 36: // Return key
             if selectedIndex >= 0 && selectedIndex < searchCompleter.results.count {
                 selectCity(searchCompleter.results[selectedIndex])
+                return true
             }
-            return true
+            return false
         default:
             return false
         }
     }
 
     private func moveSelection(direction: KeyboardNavigationDirection) {
-        let itemCount = searchCompleter.results.count
+        let count = searchCompleter.results.count
+        guard count > 0 else { return }
+
         switch direction {
         case .up:
-            if selectedIndex > 0 {
-                // If not at the top of the list, move up one item
-                selectedIndex -= 1
-            } else if selectedIndex == 0 {
-                // If at the top of the list, move focus to the search field
-                selectedIndex = -1
-            } else if selectedIndex == -1 {
-                // If focus is on the search field, move to the bottom of the list
-                selectedIndex = itemCount - 1
-            }
+            selectedIndex = (selectedIndex - 1 + count) % count
         case .down:
-            if selectedIndex == -1 {
-                // If focus is on the search field and there are items, select the first item
-                if itemCount > 0 {
-                    selectedIndex = 0
-                }
-            } else if selectedIndex < itemCount - 1 {
-                // If not at the bottom of the list, move down one item
-                selectedIndex += 1
-            } else if selectedIndex == itemCount - 1 {
-                // If at the bottom of the list, move focus back to the search field
-                selectedIndex = -1
-            }
+            selectedIndex = (selectedIndex + 1) % count
         case .enter:
-            // Enter key handling is done elsewhere
             break
         }
     }
 
     private func selectCity(_ result: TimeZoneSearchResult) {
-        selectionTask?.cancel()
         selectionError = nil
-        if result.type == .preset {
-            if selectedName.isEmpty { selectedName = result.title }
-            selectedCity = "PST (UTC−08:00)"
-            selectedTimezone = result.identifier.flatMap { TimeZone(identifier: $0) }
-            countryEmoji = "🕒"
-            isShowingPopover = false
-            return
-        }
-        if let identifier = result.identifier, let timezone = TimeZone(identifier: identifier) {
-            selectedCity = result.title
-            selectedTimezone = timezone
-            countryEmoji = result.countryCode.map { Utils.shared.getCountryEmoji(for: $0) } ?? ""
-            isShowingPopover = false
-            return
-        }
+        selectionTask?.cancel()
         selectionTask = Task { @MainActor in
             let timezone = await result.getTimeZone()
             guard !Task.isCancelled else { return }
@@ -285,12 +313,15 @@ struct CitySearchResults: View {
             }
             selectedCity = result.subtitle.isEmpty ? result.title : "\(result.title), \(result.subtitle)"
             selectedTimezone = timezone
-            countryEmoji = result.countryCode.map { Utils.shared.getCountryEmoji(for: $0) } ?? ""
+            if result == .tibo {
+                image?.wrappedValue = NSImage(named: "tibo")
+            }
             isShowingPopover = false
         }
     }
-
 }
+
+// MARK: - CustomTextField
 
 struct CustomTextField: NSViewRepresentable {
     @Binding var text: String
@@ -302,10 +333,10 @@ struct CustomTextField: NSViewRepresentable {
         textField.placeholderString = placeholder
         textField.delegate = context.coordinator
         textField.focusRingType = .none
-        textField.drawsBackground = true
-        textField.backgroundColor = .textBackgroundColor
+        textField.drawsBackground = false
         textField.isBordered = false
         textField.textColor = .labelColor
+        textField.font = .systemFont(ofSize: 13)
         return textField
     }
 

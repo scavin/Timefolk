@@ -12,6 +12,12 @@ struct ContentView: View {
         case let .editTimeZone(entryId):
             EditTimeZoneView(entryId: entryId)
                 .transition(.asymmetric(insertion: .push(from: .trailing), removal: .push(from: .leading)))
+        case .editProfile:
+            EditProfileView()
+                .transition(.asymmetric(insertion: .push(from: .trailing), removal: .push(from: .leading)))
+        case .about:
+            AboutView()
+                .transition(.asymmetric(insertion: .push(from: .trailing), removal: .push(from: .leading)))
         }
     }
 }

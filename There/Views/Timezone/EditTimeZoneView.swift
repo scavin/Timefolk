@@ -14,7 +14,6 @@ struct EditTimeZoneView: View {
     @State var city = ""
     @State var selectedTimeZone: TimeZone?
     @State var isShowingPopover = false
-    @State var countryEmoji = ""
 
     @State var showingXAccountInput = false
     @State var showingTGAccountInput = false
@@ -23,41 +22,49 @@ struct EditTimeZoneView: View {
     @State var errorMessage: String?
 
     var body: some View {
-        VStack(alignment: .center, spacing: 0) {
+        VStack(spacing: 0) {
+            Titlebar()
+
             if isLoading {
+                Spacer()
                 ProgressView()
+                    .controlSize(.small)
+                Spacer()
             } else if entry != nil {
-                IconSection(
-                    image: $image,
-                    countryEmoji: $countryEmoji,
-                    showingXAccountInput: $showingXAccountInput,
-                    showingTGAccountInput: $showingTGAccountInput
-                )
+                ScrollView(.vertical) {
+                    VStack(spacing: 12) {
+                        IconSection(
+                            image: $image,
+                            showingXAccountInput: $showingXAccountInput,
+                            showingTGAccountInput: $showingTGAccountInput
+                        )
 
-                FormSection(
-                    name: $name,
-                    city: $city,
-                    selectedTimeZone: $selectedTimeZone,
-                    isShowingPopover: $isShowingPopover,
-                    searchCompleter: searchCompleter,
-                    countryEmoji: $countryEmoji,
-                    image: $image,
-                    showingTGAccountInput: $showingTGAccountInput,
-                    showingXAccountInput: $showingXAccountInput,
-                    isEditing: true,
-                    saveError: errorMessage,
-                    saveEntry: saveEntry
-                )
+                        FormSection(
+                            name: $name,
+                            city: $city,
+                            selectedTimeZone: $selectedTimeZone,
+                            isShowingPopover: $isShowingPopover,
+                            searchCompleter: searchCompleter,
+                            image: $image,
+                            showingTGAccountInput: $showingTGAccountInput,
+                            showingXAccountInput: $showingXAccountInput,
+                            isEditing: true,
+                            saveError: errorMessage,
+                            onDelete: deleteEntry,
+                            saveEntry: saveEntry
+                        )
+                    }
+                    .padding(.top, 4)
+                    .padding(.bottom, 16)
+                }
+                .scrollIndicators(.hidden)
             } else {
+                Spacer()
                 NotFoundView()
+                Spacer()
             }
-
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .overlay(alignment: .topLeading) {
-            Titlebar()
-                .padding(6)
-        }
         .task {
             if entry == nil {
                 await loadEntry()
@@ -79,9 +86,10 @@ struct EditTimeZoneView: View {
             name = fetched.name
             city = fetched.city
             selectedTimeZone = TimeZone(identifier: fetched.timezoneIdentifier)
-            countryEmoji = fetched.flag ?? ""
             if let path = fetched.photoData, let url = URL(string: path), url.isFileURL {
                 image = NSImage(contentsOf: url)
+            } else if (fetched.name.caseInsensitiveCompare("Tibo") == .orderedSame || fetched.timezoneIdentifier == "Etc/GMT+8"), let tiboAsset = NSImage(named: "tibo") {
+                image = tiboAsset
             } else {
                 image = nil
             }
@@ -89,11 +97,11 @@ struct EditTimeZoneView: View {
             errorMessage = error.localizedDescription
         }
     }
-
 }
 
 #Preview {
     EditTimeZoneView(entryId: 1712)
-        .frame(width: 300, height: 400)
+        .frame(width: 320, height: 440)
         .environment(\.database, .shared)
+        .environmentObject(Router())
 }

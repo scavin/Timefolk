@@ -264,8 +264,6 @@ class SearchCompleter: ObservableObject {
     }
 
     private func setupDefaultResults() {
-        defaultResults.append(.tibo)
-
         // All timezones and locations
         for identifier in TimeZone.knownTimeZoneIdentifiers {
             let components = identifier.split(separator: "/")

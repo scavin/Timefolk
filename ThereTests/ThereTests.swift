@@ -5,11 +5,19 @@
 //  Created by Dena Sohrabi on 9/2/24.
 //
 
+import AppKit
 import Foundation
+import GRDB
 import Testing
-@testable import There
+@testable import Timefolk
 
 struct ThereTests {
+
+    @Test func tiboDedicatedAvatarAssetLoads() {
+        let image = NSImage(named: "tibo")
+        #expect(image != nil)
+        #expect((image?.size.width ?? 0) > 0)
+    }
 
     @Test func tiboUsesFixedPSTAcrossSeasons() async throws {
         let timezone = try #require(await TimeZoneSearchResult.tibo.getTimeZone())
@@ -29,8 +37,40 @@ struct ThereTests {
         }
     }
 
-    @Test func tiboIsSuggestedBeforeCityResults() {
-        #expect(SearchCompleter().results.first == .tibo)
+    @Test func tiboIsSeededAsDefaultEntry() throws {
+        let dbQueue = try DatabaseQueue(configuration: AppDatabase.makeConfiguration())
+        let db = try AppDatabase(dbQueue)
+        let testDefaults = UserDefaults(suiteName: "TestSuit-\(UUID().uuidString)")!
+        AppDatabase.seedDefaultEntriesIfNeeded(in: db.dbWriter, userDefaults: testDefaults)
+
+        let entries = try db.dbWriter.read { try Entry.fetchAll($0) }
+        #expect(entries.count == 1)
+        #expect(entries.first?.name == "Tibo")
+        #expect(entries.first?.timezoneIdentifier == "Etc/GMT+8")
+    }
+
+    @Test func tiboIsNotReseededWhenUserDeletesAllEntries() throws {
+        let dbQueue = try DatabaseQueue(configuration: AppDatabase.makeConfiguration())
+        let db = try AppDatabase(dbQueue)
+        let testDefaults = UserDefaults(suiteName: "TestSuit-\(UUID().uuidString)")!
+
+        // First launch: seeds Tibo
+        AppDatabase.seedDefaultEntriesIfNeeded(in: db.dbWriter, userDefaults: testDefaults, force: true)
+        let initialEntries = try db.dbWriter.read { try Entry.fetchAll($0) }
+        #expect(initialEntries.count == 1)
+
+        // User intentionally deletes all entries
+        try db.dbWriter.write { try Entry.deleteAll($0) }
+        let countAfterDelete = try db.dbWriter.read { try Entry.fetchCount($0) }
+        #expect(countAfterDelete == 0)
+
+        // Mark that defaults were seeded
+        testDefaults.set(true, forKey: "hasSeededDefaultEntries")
+
+        // Second launch: should NOT re-seed Tibo
+        AppDatabase.seedDefaultEntriesIfNeeded(in: db.dbWriter, userDefaults: testDefaults)
+        let finalEntries = try db.dbWriter.read { try Entry.fetchAll($0) }
+        #expect(finalEntries.count == 0)
     }
 
     @Test(arguments: ["Tibo", "tIbO", "Codex", "reset", "PST"])

@@ -32,7 +32,7 @@ final class ThereUITests: XCTestCase {
         XCTAssertTrue(tibo.waitForExistence(timeout: 5))
         XCTAssertEqual(app.staticTexts.matching(identifier: "Tibo").count, 1)
         tibo.click()
-        XCTAssertTrue(app.staticTexts["Edit Time Zone"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["编辑时区"].waitForExistence(timeout: 5))
         app.buttons["timezone.save"].click()
         XCTAssertTrue(tibo.waitForExistence(timeout: 5))
         XCTAssertEqual(app.staticTexts.matching(identifier: "Tibo").count, 1)

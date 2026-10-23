@@ -6,7 +6,7 @@ struct AddButton: View {
     @EnvironmentObject var router: Router
 
     var body: some View {
-        CompactButton(title: "Add") {
+        CompactButton(title: "添加") {
             router.setActiveRoute(to: .addTimezone)
         }
         .accessibilityIdentifier("timezone.add")

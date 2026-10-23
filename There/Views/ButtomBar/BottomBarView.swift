@@ -4,35 +4,41 @@ struct BottomBarView: View {
     @Binding var isAtBottom: Bool
     @Binding var sortOrder: SortOrder
     @Binding var showSlider: Bool
+    @Environment(\.colorScheme) private var scheme
 
     var body: some View {
-        HStack(spacing: 2) {
+        HStack(spacing: 6) {
             AddButton()
+
             Spacer()
 
             Button {
-                withAnimation {
+                withAnimation(TimefolkTheme.Animation.smooth) {
                     showSlider.toggle()
                 }
             } label: {
-                Image(systemName: "clock.arrow.2.circlepath")
-                    .font(.body)
+                Image(systemName: "slider.horizontal.2.square")
+                    .font(.system(size: 13, weight: .medium))
             }
-            .buttonStyle(SettingsButtonStyle())
-            .help("Time Slider")
+            .buttonStyle(SettingsButtonStyle(isActive: showSlider))
+            .help("时间穿梭")
 
             SettingsButton(sortOrder: $sortOrder)
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal, 10)
         .frame(maxWidth: .infinity)
-        .frame(height: 45)
-        .overlay(alignment: .top) {
-            if isAtBottom {
+        .frame(height: 42)
+        .background(
+            ZStack(alignment: .top) {
+                // 原生底部工具栏背景
+                Rectangle()
+                    .fill(.regularMaterial)
+                
+                // 微分割线
                 Divider()
-                    .padding(.top, -2)
+                    .opacity(0.4)
             }
-        }
-        .animation(.default, value: isAtBottom)
+        )
     }
 }
 

@@ -5,7 +5,7 @@ struct NotFoundView: View {
         VStack(spacing: 2) {
             Text("😕")
                 .font(.largeTitle)
-            Text("Entry not found")
+            Text("未找到")
                 .font(.title)
                 .fontWeight(.medium)
         }

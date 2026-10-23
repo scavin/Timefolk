@@ -3,25 +3,25 @@ import SwiftUI
 struct SettingsButton: View {
     @State private var settingsHovered: Bool = false
     @Environment(\.openWindow) var openWindow
-    @Environment(\.openURL) var openURL
     @EnvironmentObject var appState: AppState
+    @EnvironmentObject var router: Router
     @Environment(\.database) var database: AppDatabase
     @Environment(\.colorScheme) var scheme
+    @AppStorage("use24HourFormat") private var use24HourFormat: Bool = false
     @State private var launchAtLogin = LoginItem.isEnabled
     @State private var updatingLoginItem = false
     @State private var loginItemError: String?
     @Binding var sortOrder: SortOrder
-    var backgroundColor: Color {
-        if scheme == .dark {
-            return Color(.gray).opacity(0.2)
-        } else {
-            return .white
-        }
-    }
 
     var body: some View {
         Menu {
-            Toggle("Launch at Login", isOn: Binding(
+            Button("个人资料…") {
+                router.setActiveRoute(to: .editProfile)
+            }
+
+            Divider()
+
+            Toggle("开机启动", isOn: Binding(
                 get: { launchAtLogin },
                 set: { enabled in
                     updatingLoginItem = true
@@ -39,35 +39,27 @@ struct SettingsButton: View {
                 }
             ))
             .disabled(updatingLoginItem)
-            Toggle("Ascending order", isOn: Binding(
-                get: { sortOrder == .timeAscending },
-                set: { newValue in
-                    sortOrder = newValue ? .timeAscending : .timeDescending
-                }
-            ))
 
-            Section("Support") {
-                Button("DM on X") {
-                    openURL(URL(string: "https://twitter.com/messages/compose?recipient_id=1434101346110689282")!)
-                }
-                Button("Email Us") {
-                    openAppleMailComposer(to: "support@there.pm",
-                                          subject: "Support Request",
-                                          body: "Hello, I need assistance with...")
-                }
+            Divider()
+
+            Toggle("24 小时制", isOn: $use24HourFormat)
+
+            Divider()
+
+            Picker("时区排序", selection: $sortOrder) {
+                Text("由早到晚").tag(SortOrder.timeAscending)
+                Text("由晚到早").tag(SortOrder.timeDescending)
             }
+
             Section {
-                Button("Open Website") {
-                    openURL(URL(string: "https://there.pm")!)
-                }
-                Button("Follow on X") {
-                    openURL(URL(string: "https://x.com/ThereHQ")!)
+                Button("关于 Timefolk") {
+                    router.setActiveRoute(to: .about)
                 }
             }
 
             #if targetEnvironment(simulator) || DEBUG
-                Section("Dev & Debug") {
-                    Button("Clear Cache & Data") {
+                Section("维护调试") {
+                    Button("抹掉数据") {
                         UserDefaults.standard.removeObject(forKey: "hasCompletedInitialSetup")
                         do {
                             _ = try database.dbWriter.write { db in
@@ -82,89 +74,70 @@ struct SettingsButton: View {
 
             Divider()
 
-            Button("Quit") {
+            Button("退出程序") {
                 NSApplication.shared.terminate(nil)
             }
             .keyboardShortcut("q", modifiers: .command)
         } label: {
-            Image(systemName: "gearshape.fill")
-                .font(.body)
+            Image(systemName: "gearshape")
+                .font(.system(size: 13, weight: .medium))
         }
         .buttonStyle(SettingsButtonStyle())
         .onAppear { launchAtLogin = LoginItem.isEnabled }
-        .alert("Could not update login item", isPresented: Binding(
+        .alert("设置失败", isPresented: Binding(
             get: { loginItemError != nil },
             set: { if !$0 { loginItemError = nil } }
         )) {
-            Button("OK") { loginItemError = nil }
+            Button("好") { loginItemError = nil }
         } message: {
             Text(loginItemError ?? "")
-        }
-    }
-
-    func openAppleMailComposer(to recipient: String, subject: String? = nil, body: String? = nil) {
-        let appleMailBundleIdentifier = "com.apple.mail"
-
-        guard let appleMailURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: appleMailBundleIdentifier) else {
-            print("Apple Mail not found")
-            return
-        }
-
-        var components = URLComponents()
-        components.scheme = "mailto"
-        components.path = recipient
-
-        var queryItems = [URLQueryItem]()
-        if let subject = subject {
-            queryItems.append(URLQueryItem(name: "subject", value: subject))
-        }
-        if let body = body {
-            queryItems.append(URLQueryItem(name: "body", value: body))
-        }
-
-        if !queryItems.isEmpty {
-            components.queryItems = queryItems
-        }
-
-        guard let emailURL = components.url else {
-            print("Invalid email URL")
-            return
-        }
-
-        let configuration = NSWorkspace.OpenConfiguration()
-        configuration.activates = true
-
-        NSWorkspace.shared.open([emailURL], withApplicationAt: appleMailURL, configuration: configuration) { _, error in
-            if let error = error {
-                print("Failed to open Apple Mail: \(error.localizedDescription)")
-            }
         }
     }
 }
 
 #Preview {
     SettingsButton(sortOrder: .constant(.timeAscending))
+        .environmentObject(AppState())
+        .environmentObject(Router())
 }
 
 struct SettingsButtonStyle: ButtonStyle {
-    @Environment(\.colorScheme) var scheme
+    @Environment(\.colorScheme) private var scheme
     @State private var isHovered = false
+    var isActive: Bool = false
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .foregroundColor(isHovered ? .primary : .secondary)
-            .frame(height: 28)
-            .padding(.horizontal, 8)
-            .background(isHovered ? backgroundColor : .clear)
-            .cornerRadius(8)
+            .foregroundColor(isActive ? .white : (isHovered ? .primary : .secondary))
+            .frame(width: 28, height: 28)
+            .background(
+                RoundedRectangle(cornerRadius: TimefolkTheme.Radius.small, style: .continuous)
+                    .fill(
+                        isActive
+                            ? Color.accentColor
+                            : (isHovered
+                                ? TimefolkTheme.Colors.cardHoverBackground(colorScheme: scheme)
+                                : Color.clear)
+                    )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: TimefolkTheme.Radius.small, style: .continuous)
+                    .strokeBorder(
+                        isActive
+                            ? Color.white.opacity(scheme == .dark ? 0.25 : 0)
+                            : (isHovered
+                                ? TimefolkTheme.Colors.hairlineBorder(colorScheme: scheme)
+                                : Color.clear),
+                        lineWidth: 0.5
+                    )
+            )
+            .contentShape(Rectangle())
+            .scaleEffect(configuration.isPressed ? 0.94 : 1.0)
+            .animation(TimefolkTheme.Animation.quick, value: configuration.isPressed)
+            .animation(TimefolkTheme.Animation.quick, value: isHovered)
+            .animation(TimefolkTheme.Animation.quick, value: isActive)
             .onHover { hovering in
-                withAnimation {
-                    isHovered = hovering
-                }
+                self.isHovered = hovering
             }
-    }
-
-    private var backgroundColor: Color {
-        scheme == .dark ? Color(.gray).opacity(0.2) : .white
     }
 }

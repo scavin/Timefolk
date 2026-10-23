@@ -1,62 +1,27 @@
 // InitialView.swift
 
-import PostHog
 import SwiftUI
 
 struct InitialView: View {
     @Environment(\.database) var database
-    @State private var email: String = ""
+    @State private var userName: String = ""
     @EnvironmentObject var appState: AppState
 
     var body: some View {
-        HStack(spacing: 80) {
+        HStack(spacing: 60) {
             LeftPanel()
-            RightPanel(email: $email, saveEmail: saveEmail)
+            RightPanel(userName: $userName, saveUser: saveUser)
         }
-        .padding()
+        .padding(32)
     }
 
-    func signupForThere(email: String, completion: @escaping (Bool) -> Void) {
-        var hostname: String {
-            #if DEBUG
-                return "http://localhost:8000"
-            #else
-                return "https://headline.inline.chat"
-            #endif
+    func saveUser() {
+        let trimmed = userName.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmed.isEmpty {
+            UserDefaults.standard.set(trimmed, forKey: "userName")
         }
-        let url = URL(string: "\(hostname)/api/there/signup")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        let timeZone = TimeZone.current.identifier
-        let body: [String: Any] = ["email": email, "timeZone": timeZone]
-
-        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
-
-        URLSession.shared.dataTask(with: request) { _, response, _ in
-            let success = (response as? HTTPURLResponse)?.statusCode == 200
-            DispatchQueue.main.async {
-                completion(success)
-            }
-        }.resume()
-    }
-
-    func saveEmail() {
-        signupForThere(email: email) { success in
-            if success {
-                PostHogSDK.shared.capture("user_signed_up",
-                                          userProperties: ["email": email],
-                                          userPropertiesSetOnce: ["date_of_sign_up": Date.now])
-                print("Signup successful")
-                UserDefaults.standard.set(email, forKey: "userEmail")
-                UserDefaults.standard.set(true, forKey: "hasCompletedInitialSetup")
-
-            } else {
-                print("Signup failed")
-                UserDefaults.standard.set(true, forKey: "hasCompletedInitialSetup")
-            }
-        }
+        UserDefaults.standard.set(true, forKey: "hasCompletedInitialSetup")
+        AppDatabase.seedDefaultEntriesIfNeeded(in: database.dbWriter)
     }
 }
 

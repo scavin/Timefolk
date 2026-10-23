@@ -1,0 +1,235 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- macOS App Icon Drop Shadow -->
+    <filter id="macAppShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="28" stdDeviation="32" flood-color="#000000" flood-opacity="0.45" />
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.25" />
+    </filter>
+
+    <!-- Globe Glow & Aura -->
+    <filter id="globeGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="36" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <!-- Dial Soft Shadow -->
+    <filter id="dialShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.3" />
+    </filter>
+
+    <!-- Canvas Background Gradient (macOS 2026 Deep Space Gradient) -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#141936" />
+      <stop offset="50%" stop-color="#0D1126" />
+      <stop offset="100%" stop-color="#060814" />
+    </linearGradient>
+
+    <!-- Top Specular Highlight on Canvas -->
+    <linearGradient id="canvasHighlight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.28" />
+      <stop offset="35%" stop-color="#FFFFFF" stop-opacity="0.05" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- Globe Sphere Shading: Daylight (Left) to Twilight (Right) -->
+    <radialGradient id="globeSunlight" cx="32%" cy="32%" r="68%">
+      <stop offset="0%" stop-color="#60A5FA" />
+      <stop offset="35%" stop-color="#3B82F6" />
+      <stop offset="70%" stop-color="#1D4ED8" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </radialGradient>
+
+    <!-- Night-side Mask Gradient -->
+    <linearGradient id="nightGradient" x1="20%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0" />
+      <stop offset="50%" stop-color="#030712" stop-opacity="0.45" />
+      <stop offset="85%" stop-color="#020617" stop-opacity="0.88" />
+    </linearGradient>
+
+    <!-- Sun Halo on the Daylight Edge -->
+    <linearGradient id="sunHalo" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE047" stop-opacity="0.85" />
+      <stop offset="50%" stop-color="#38BDF8" stop-opacity="0.5" />
+      <stop offset="100%" stop-color="#6366F1" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- Accent Clock Ring Gradient -->
+    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="50%" stop-color="#818CF8" />
+      <stop offset="100%" stop-color="#C084FC" />
+    </linearGradient>
+
+    <!-- Golden Clock Hand Gradient -->
+    <linearGradient id="goldHand" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFBEB" />
+      <stop offset="40%" stop-color="#FCD34D" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </linearGradient>
+
+    <!-- Clip Paths -->
+    <clipPath id="squircleClip">
+      <rect x="92" y="92" width="840" height="840" rx="200" ry="200" />
+    </clipPath>
+
+    <clipPath id="globeClip">
+      <circle cx="512" cy="512" r="280" />
+    </clipPath>
+  </defs>
+
+  <!-- ==================== macOS Canvas Squircle ==================== -->
+  <g filter="url(#macAppShadow)">
+    <rect x="92" y="92" width="840" height="840" rx="200" ry="200" fill="url(#bgGrad)" />
+    <!-- Canvas Inner Highlight / Stroke -->
+    <rect x="92" y="92" width="840" height="840" rx="200" ry="200" fill="url(#canvasHighlight)" />
+    <rect x="92.5" y="92.5" width="839" height="839" rx="199.5" ry="199.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1.5" />
+  </g>
+
+  <!-- ==================== Clipped Inner Content ==================== -->
+  <g clip-path="url(#squircleClip)">
+
+    <!-- Ambient Orbital Background Glow -->
+    <circle cx="512" cy="512" r="380" fill="url(#ringGrad)" opacity="0.08" filter="url(#globeGlow)" />
+    <circle cx="380" cy="380" r="240" fill="#38BDF8" opacity="0.12" filter="url(#globeGlow)" />
+
+    <!-- Outer 24-Hour Timezone Dial Ring -->
+    <circle cx="512" cy="512" r="350" fill="none" stroke="#38BDF8" stroke-opacity="0.2" stroke-width="2" stroke-dasharray="4 12" />
+    <circle cx="512" cy="512" r="325" fill="none" stroke="#818CF8" stroke-opacity="0.25" stroke-width="1.5" />
+
+    <!-- 24-Hour Timezone Dial Ticks (Every 15° = 1 Hour Time Zone) -->
+    <g transform="translate(512, 512)" opacity="0.65">
+      <!-- 24 main timezone hour notches -->
+      <!-- UTC (12 o'clock), UTC+6 (3 o'clock), UTC+12 (6 o'clock), UTC-6 (9 o'clock) -->
+      <line x1="0" y1="-345" x2="0" y2="-325" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" />
+      <line x1="0" y1="345" x2="0" y2="325" stroke="#818CF8" stroke-width="2.5" stroke-linecap="round" />
+      <line x1="-345" y1="0" x2="-325" y2="0" stroke="#818CF8" stroke-width="2.5" stroke-linecap="round" />
+      <line x1="345" y1="0" x2="325" y2="0" stroke="#818CF8" stroke-width="2.5" stroke-linecap="round" />
+
+      <!-- Intermediate 15-degree hour tick marks -->
+      <circle cx="0" cy="-335" r="2.5" fill="#38BDF8" transform="rotate(15)" />
+      <circle cx="0" cy="-335" r="2.5" fill="#38BDF8" transform="rotate(30)" />
+      <circle cx="0" cy="-335" r="2.5" fill="#38BDF8" transform="rotate(45)" />
+      <circle cx="0" cy="-335" r="2.5" fill="#38BDF8" transform="rotate(60)" />
+      <circle cx="0" cy="-335" r="2.5" fill="#38BDF8" transform="rotate(75)" />
+      <circle cx="0" cy="-335" r="2.5" fill="#818CF8" transform="rotate(105)" />
+      <circle cx="0" cy="-335" r="2.5" fill="#818CF8" transform="rotate(120)" />
+      <circle cx="0" cy="-335" r="2.5" fill="#818CF8" transform="rotate(135)" />
+      <circle cx="0" cy="-335" r="2.5" fill="#818CF8" transform="rotate(150)" />
+      <circle cx="0" cy="-335" r="2.5" fill="#818CF8" transform="rotate(165)" />
+      <circle cx="0" cy="-335" r="2.5" fill="#818CF8" transform="rotate(195)" />
+      <circle cx="0" cy="-335" r="2.5" fill="#818CF8" transform="rotate(210)" />
+      <circle cx="0" cy="-335" r="2.5" fill="#818CF8" transform="rotate(225)" />
+      <circle cx="0" cy="-335" r="2.5" fill="#818CF8" transform="rotate(240)" />
+      <circle cx="0" cy="-335" r="2.5" fill="#818CF8" transform="rotate(255)" />
+      <circle cx="0" cy="-335" r="2.5" fill="#38BDF8" transform="rotate(285)" />
+      <circle cx="0" cy="-335" r="2.5" fill="#38BDF8" transform="rotate(300)" />
+      <circle cx="0" cy="-335" r="2.5" fill="#38BDF8" transform="rotate(315)" />
+      <circle cx="0" cy="-335" r="2.5" fill="#38BDF8" transform="rotate(330)" />
+      <circle cx="0" cy="-335" r="2.5" fill="#38BDF8" transform="rotate(345)" />
+    </g>
+
+    <!-- ==================== The Central Globe Sphere ==================== -->
+    <g filter="url(#dialShadow)">
+      <!-- Globe Base Base Layer -->
+      <circle cx="512" cy="512" r="280" fill="url(#globeSunlight)" />
+
+      <!-- Clipped Globe Lines & Textures -->
+      <g clip-path="url(#globeClip)">
+        <!-- Latitude Parallels -->
+        <ellipse cx="512" cy="512" rx="280" ry="0" fill="none" stroke="#FFFFFF" stroke-opacity="0.25" stroke-width="1.5" />
+        <ellipse cx="512" cy="400" rx="255" ry="50" fill="none" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="1.2" />
+        <ellipse cx="512" cy="624" rx="255" ry="50" fill="none" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="1.2" />
+        <ellipse cx="512" cy="305" rx="205" ry="40" fill="none" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1" stroke-dasharray="4 6" />
+        <ellipse cx="512" cy="719" rx="205" ry="40" fill="none" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1" stroke-dasharray="4 6" />
+
+        <!-- Longitudinal Timezone Meridians (15° spacing across 3D sphere) -->
+        <!-- Prime Meridian (Center 0°) -->
+        <line x1="512" y1="232" x2="512" y2="792" stroke="#60A5FA" stroke-width="2.5" stroke-opacity="0.6" />
+
+        <!-- East & West Meridians (Curved Ellipses representing 3D projection) -->
+        <ellipse cx="512" cy="512" rx="72" ry="280" fill="none" stroke="#FFFFFF" stroke-opacity="0.32" stroke-width="1.5" />
+        <ellipse cx="512" cy="512" rx="145" ry="280" fill="none" stroke="#FFFFFF" stroke-opacity="0.28" stroke-width="1.5" />
+        <ellipse cx="512" cy="512" rx="215" ry="280" fill="none" stroke="#FFFFFF" stroke-opacity="0.22" stroke-width="1.5" />
+        <ellipse cx="512" cy="512" rx="265" ry="280" fill="none" stroke="#FFFFFF" stroke-opacity="0.16" stroke-width="1.2" />
+
+        <!-- Stylized Continental Silhouettes (Soft Glowing Shapes) -->
+        <!-- Europe & Africa zone -->
+        <path d="M 480 340 Q 520 330 535 365 Q 550 420 520 460 Q 500 500 515 570 Q 480 590 465 520 Q 450 440 480 340 Z" fill="#60A5FA" fill-opacity="0.25" />
+        <!-- Americas zone -->
+        <path d="M 330 360 Q 380 340 370 420 Q 350 460 380 500 Q 410 560 380 620 Q 340 600 350 510 Q 300 450 330 360 Z" fill="#38BDF8" fill-opacity="0.2" />
+        <!-- Asia & Oceania zone -->
+        <path d="M 610 370 Q 690 380 710 440 Q 670 490 630 460 Q 600 520 660 590 Q 620 620 590 550 Q 570 430 610 370 Z" fill="#818CF8" fill-opacity="0.18" />
+
+        <!-- Nighttime Terminator Shadow Overlay (Right half of the world is in night) -->
+        <rect x="512" y="232" width="280" height="560" fill="url(#nightGradient)" />
+        <ellipse cx="512" cy="512" rx="90" ry="280" fill="#020617" fill-opacity="0.4" />
+
+        <!-- Golden Daylight Edge Glow on the Sunlit Side -->
+        <path d="M 512 232 A 280 280 0 0 0 232 512 A 280 280 0 0 0 512 792 Z" fill="url(#sunHalo)" opacity="0.3" mix-blend-mode="screen" />
+
+        <!-- Nighttime Constellation Points (Cities Glowing in the Dark) -->
+        <circle cx="590" cy="420" r="3" fill="#FDE047" opacity="0.9" />
+        <circle cx="640" cy="450" r="2.5" fill="#FDE047" opacity="0.8" />
+        <circle cx="680" cy="480" r="2" fill="#FFFFFF" opacity="0.85" />
+        <circle cx="560" cy="490" r="2.5" fill="#FDE047" opacity="0.75" />
+        <circle cx="630" cy="580" r="3" fill="#FDE047" opacity="0.8" />
+        <circle cx="600" cy="620" r="2" fill="#FFFFFF" opacity="0.7" />
+        <circle cx="710" cy="540" r="1.5" fill="#93C5FD" opacity="0.6" />
+      </g>
+
+      <!-- Globe Specular Rim Ring (Glass Bezel Edge) -->
+      <circle cx="512" cy="512" r="280" fill="none" stroke="url(#ringGrad)" stroke-width="2.5" opacity="0.7" />
+      <circle cx="512" cy="512" r="278.5" fill="none" stroke="#FFFFFF" stroke-width="1" stroke-opacity="0.35" />
+    </g>
+
+    <!-- ==================== Timezone Clock Hands Overlay ==================== -->
+    <g filter="url(#dialShadow)">
+      <!-- Hour Hand (Pointing towards ~10:10 / 305° - symbolizing PST / Codex Timezone) -->
+      <g transform="translate(512, 512) rotate(305)">
+        <!-- Hour Hand Shaft -->
+        <path d="M -7 18 L -4 -130 L 0 -150 L 4 -130 L 7 18 Z" fill="url(#goldHand)" />
+        <line x1="0" y1="12" x2="0" y2="-138" stroke="#FFFFFF" stroke-opacity="0.6" stroke-width="1.5" stroke-linecap="round" />
+      </g>
+
+      <!-- Minute Hand (Pointing towards ~2:15 / 68° - crisp elegant pointer) -->
+      <g transform="translate(512, 512) rotate(68)">
+        <!-- Minute Hand Shaft -->
+        <path d="M -5 22 L -2.5 -205 L 0 -225 L 2.5 -205 L 5 22 Z" fill="#FFFFFF" />
+        <!-- Accent Stripe on Minute Hand -->
+        <line x1="0" y1="16" x2="0" y2="-210" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" />
+      </g>
+
+      <!-- Center Hub Pivot Jewel -->
+      <circle cx="512" cy="512" r="16" fill="#0F172A" />
+      <circle cx="512" cy="512" r="14" fill="url(#goldHand)" />
+      <circle cx="512" cy="512" r="7" fill="#0B1120" />
+      <circle cx="510" cy="510" r="2.5" fill="#FFFFFF" opacity="0.8" />
+    </g>
+
+    <!-- ==================== Floating Timezone Pill Badges ==================== -->
+    <!-- Top UTC Tag Pill -->
+    <g transform="translate(512, 185)">
+      <rect x="-42" y="-14" width="84" height="28" rx="14" fill="#0F172A" fill-opacity="0.8" />
+      <rect x="-42" y="-14" width="84" height="28" rx="14" fill="none" stroke="#38BDF8" stroke-opacity="0.4" stroke-width="1" />
+      <text x="0" y="5" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif" font-size="12" font-weight="700" fill="#38BDF8" text-anchor="middle" letter-spacing="1.5">UTC·0</text>
+    </g>
+
+    <!-- Bottom Left UTC-8 (Tibo / PST) Tag Pill -->
+    <g transform="translate(235, 740)">
+      <rect x="-44" y="-13" width="88" height="26" rx="13" fill="#0F172A" fill-opacity="0.85" />
+      <rect x="-44" y="-13" width="88" height="26" rx="13" fill="none" stroke="#FBBF24" stroke-opacity="0.5" stroke-width="1" />
+      <text x="0" y="5" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif" font-size="11" font-weight="700" fill="#FCD34D" text-anchor="middle" letter-spacing="1">UTC−8</text>
+    </g>
+
+    <!-- Bottom Right UTC+8 Tag Pill -->
+    <g transform="translate(789, 740)">
+      <rect x="-44" y="-13" width="88" height="26" rx="13" fill="#0F172A" fill-opacity="0.85" />
+      <rect x="-44" y="-13" width="88" height="26" rx="13" fill="none" stroke="#818CF8" stroke-opacity="0.5" stroke-width="1" />
+      <text x="0" y="5" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif" font-size="11" font-weight="700" fill="#A5B4FC" text-anchor="middle" letter-spacing="1">UTC+8</text>
+    </g>
+
+    <!-- Top Diagonal Glass Reflection across the whole icon -->
+    <path d="M 92 92 L 650 92 L 250 932 L 92 932 Z" fill="url(#canvasHighlight)" opacity="0.3" pointer-events="none" />
+
+  </g>
+</svg>

@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		C0DE00000000000000000001 /* GRDB in Test Frameworks */ = {isa = PBXBuildFile; productRef = C38562322C8719CB00858D54 /* GRDB */; };
-		C3560CD82C9AADBA009C7EBA /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = C3560CD72C9AADBA009C7EBA /* PostHog */; };
 		C357E5D12C877376003F9943 /* MenuBarExtraAccess in Frameworks */ = {isa = PBXBuildFile; productRef = C357E5D02C877376003F9943 /* MenuBarExtraAccess */; };
 		C38562332C8719CB00858D54 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = C38562322C8719CB00858D54 /* GRDB */; };
 /* End PBXBuildFile section */
@@ -31,7 +30,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		C325D0D42C85A95F0049EFC8 /* There.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = There.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C325D0D42C85A95F0049EFC8 /* Timefolk.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Timefolk.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C325D0E52C85A9600049EFC8 /* ThereTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ThereTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C325D0EF2C85A9600049EFC8 /* ThereUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ThereUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -60,7 +59,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				C38562332C8719CB00858D54 /* GRDB in Frameworks */,
-				C3560CD82C9AADBA009C7EBA /* PostHog in Frameworks */,
 				C357E5D12C877376003F9943 /* MenuBarExtraAccess in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -97,7 +95,7 @@
 		C325D0D52C85A95F0049EFC8 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				C325D0D42C85A95F0049EFC8 /* There.app */,
+				C325D0D42C85A95F0049EFC8 /* Timefolk.app */,
 				C325D0E52C85A9600049EFC8 /* ThereTests.xctest */,
 				C325D0EF2C85A9600049EFC8 /* ThereUITests.xctest */,
 			);
@@ -133,10 +131,9 @@
 			packageProductDependencies = (
 				C38562322C8719CB00858D54 /* GRDB */,
 				C357E5D02C877376003F9943 /* MenuBarExtraAccess */,
-				C3560CD72C9AADBA009C7EBA /* PostHog */,
 			);
-			productName = There;
-			productReference = C325D0D42C85A95F0049EFC8 /* There.app */;
+			productName = Timefolk;
+			productReference = C325D0D42C85A95F0049EFC8 /* Timefolk.app */;
 			productType = "com.apple.product-type.application";
 		};
 		C325D0E42C85A9600049EFC8 /* ThereTests */ = {
@@ -221,7 +218,6 @@
 			packageReferences = (
 				C38562312C8719CB00858D54 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
 				C357E5CF2C877376003F9943 /* XCRemoteSwiftPackageReference "MenuBarExtraAccess" */,
-				C3560CD32C9AACFB009C7EBA /* XCRemoteSwiftPackageReference "posthog-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C325D0D52C85A95F0049EFC8 /* Products */;
@@ -407,7 +403,14 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				LLVM_LTO = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-Osize";
+				SWIFT_REFLECTION_METADATA_LEVEL = minimal;
+				GCC_OPTIMIZATION_LEVEL = s;
+				DEPLOYMENT_POSTPROCESSING = YES;
+				STRIP_INSTALLED_PRODUCT = YES;
+				STRIP_STYLE = all;
 			};
 			name = Release;
 		};
@@ -416,25 +419,29 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				ASSETCATALOG_COMPILER_OPTIMIZATION = space;
 				CODE_SIGN_ENTITLEMENTS = There/There.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 3;
+				DEAD_CODE_STRIPPING = YES;
+				DEPLOYMENT_POSTPROCESSING = YES;
+				STRIP_INSTALLED_PRODUCT = YES;
+				STRIP_STYLE = all;
 				DEVELOPMENT_ASSET_PATHS = "\"There/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = There;
+				INFOPLIST_KEY_CFBundleDisplayName = Timefolk;
+				INFOPLIST_KEY_CFBundleIconFile = AppIcon;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
 				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "The app needs access to your location to provide location-based services";
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
 				MARKETING_VERSION = 2.1;
-				PRODUCT_BUNDLE_IDENTIFIER = pm.there.There;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.timefolk.Timefolk;
+				PRODUCT_NAME = Timefolk;
 				SDKROOT = macosx;
 				SUPPORTED_PLATFORMS = macosx;
 				SUPPORTS_MACCATALYST = NO;
@@ -446,27 +453,32 @@
 		C325D0FB2C85A9600049EFC8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				ASSETCATALOG_COMPILER_OPTIMIZATION = space;
 				CODE_SIGN_ENTITLEMENTS = There/There.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 3;
+				DEAD_CODE_STRIPPING = YES;
+				DEPLOYMENT_POSTPROCESSING = YES;
+				STRIP_INSTALLED_PRODUCT = YES;
+				STRIP_STYLE = all;
 				DEVELOPMENT_ASSET_PATHS = "\"There/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = There;
+				INFOPLIST_KEY_CFBundleDisplayName = Timefolk;
+				INFOPLIST_KEY_CFBundleIconFile = AppIcon;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
 				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "The app needs access to your location to provide location-based services";
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
 				MARKETING_VERSION = 2.1;
-				PRODUCT_BUNDLE_IDENTIFIER = pm.there.There;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.timefolk.Timefolk;
+				PRODUCT_NAME = Timefolk;
 				SDKROOT = macosx;
 				SUPPORTED_PLATFORMS = macosx;
 				SUPPORTS_MACCATALYST = NO;
@@ -485,13 +497,13 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = pm.there.ThereTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.timefolk.TimefolkTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SUPPORTED_PLATFORMS = macosx;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/There.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/There";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Timefolk.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Timefolk";
 			};
 			name = Debug;
 		};
@@ -505,13 +517,13 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = pm.there.ThereTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.timefolk.TimefolkTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SUPPORTED_PLATFORMS = macosx;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/There.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/There";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Timefolk.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Timefolk";
 			};
 			name = Release;
 		};
@@ -524,7 +536,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = pm.there.ThereUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.timefolk.TimefolkUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SUPPORTED_PLATFORMS = macosx;
@@ -543,7 +555,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = pm.there.ThereUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.timefolk.TimefolkUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SUPPORTED_PLATFORMS = macosx;
@@ -595,14 +607,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		C3560CD32C9AACFB009C7EBA /* XCRemoteSwiftPackageReference "posthog-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/PostHog/posthog-ios";
-			requirement = {
-				kind = exactVersion;
-				version = 3.92.2;
-			};
-		};
 		C357E5CF2C877376003F9943 /* XCRemoteSwiftPackageReference "MenuBarExtraAccess" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/orchetect/MenuBarExtraAccess";
@@ -622,11 +626,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		C3560CD72C9AADBA009C7EBA /* PostHog */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = C3560CD32C9AACFB009C7EBA /* XCRemoteSwiftPackageReference "posthog-ios" */;
-			productName = PostHog;
-		};
 		C357E5D02C877376003F9943 /* MenuBarExtraAccess */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = C357E5CF2C877376003F9943 /* XCRemoteSwiftPackageReference "MenuBarExtraAccess" */;

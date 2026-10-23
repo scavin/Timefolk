@@ -2,48 +2,63 @@ import SwiftUI
 
 struct Titlebar: View {
     @EnvironmentObject var router: Router
-    @State var hovered: Bool = false
+    @Environment(\.colorScheme) private var scheme
+    @State private var hovered: Bool = false
+
     var body: some View {
-        HStack(alignment: .center) {
+        HStack(alignment: .center, spacing: 8) {
             Button {
-                router.cleanActiveRoute()
+                withAnimation(TimefolkTheme.Animation.quick) {
+                    router.cleanActiveRoute()
+                }
             } label: {
-                Image(systemName: "chevron.left")
-                    .foregroundColor(.secondary)
-                    .font(.body)
-                    .padding(4)
-                    .background(hovered ? Color(NSColor.separatorColor).opacity(0.8) : .clear)
-                    .cornerRadius(6)
-                    .onHover { hovered in
-                        withAnimation {
-                            self.hovered = hovered
-                        }
-                    }
+                HStack(spacing: 3) {
+                    Image(systemName: "chevron.backward")
+                        .font(.system(size: 11, weight: .semibold))
+                    Text("返回")
+                        .font(.system(size: 12, weight: .medium))
+                }
+                .foregroundColor(hovered ? .primary : .secondary)
+                .padding(.horizontal, 6)
+                .frame(height: 24)
+                .background(
+                    RoundedRectangle(cornerRadius: TimefolkTheme.Radius.small, style: .continuous)
+                        .fill(
+                            hovered
+                                ? TimefolkTheme.Colors.cardHoverBackground(colorScheme: scheme)
+                                : Color.clear
+                        )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: TimefolkTheme.Radius.small, style: .continuous)
+                        .strokeBorder(
+                            hovered
+                                ? TimefolkTheme.Colors.hairlineBorder(colorScheme: scheme)
+                                : Color.clear,
+                            lineWidth: 0.5
+                        )
+                )
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Back")
-
-            switch router.activeRoute {
-            case .addTimezone:
-                Text("🗺️")
-                    .font(.callout)
-                Text("Add Time Zone")
-                    .font(.body)
-                    .fontWeight(.medium)
-            case .editTimeZone:
-                Text("✍️")
-                    .font(.callout)
-                Text("Edit Time Zone")
-                    .font(.body)
-                    .fontWeight(.medium)
-            case .mainView:
-                EmptyView()
+            .accessibilityLabel("返回")
+            .keyboardShortcut(.cancelAction)
+            .onHover { hovering in
+                withAnimation(TimefolkTheme.Animation.quick) {
+                    self.hovered = hovering
+                }
             }
+
+            EmptyView()
+
+            Spacer()
         }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
     }
 }
 
 #Preview {
     Titlebar()
         .padding()
+        .environmentObject(Router())
 }

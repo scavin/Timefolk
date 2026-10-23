@@ -1,6 +1,5 @@
 import AppKit
 import GRDB
-import PostHog
 import SwiftUI
 
 struct MainView: View {
@@ -12,33 +11,82 @@ struct MainView: View {
     @EnvironmentObject var router: Router
     @State private var isAtBottom: Bool = false
     @State private var showSlider: Bool = false
+    @State private var anchorEntryId: Int64? = nil
     @State var timeOffset: Double = 0
 
     var body: some View {
-        VStack(alignment: sortedEntries.isEmpty ? .center : .leading, spacing: 2) {
+        VStack(alignment: sortedEntries.isEmpty ? .center : .leading, spacing: 0) {
             if sortedEntries.isEmpty {
                 Spacer()
                 EmptyTimezoneView()
                 Spacer()
             } else {
                 ScrollView(.vertical) {
-                    LazyVStack(spacing: 0) {
+                    LazyVStack(spacing: 2) {
                         TimelineView(.periodic(from: Calendar.current.dateInterval(of: .minute, for: .now)?.start ?? .now, by: 60)) { context in
-                            ForEach(sortedEntries) { entry in
-                                EntryRow(entry: entry, currentDate: context.date, timeOffset: $timeOffset)
-                                    .contextMenu {
-                                        Button("Edit") {
-                                            router.setActiveRoute(to: .editTimeZone(entryId: entry.id))
-                                        }
-                                        Button("Delete", role: .destructive) {
-                                            deleteEntry(entry)
+                            // 本地用户时间卡片（固定在顶部）
+                            LocalEntryRow(
+                                currentDate: context.date,
+                                timeOffset: $timeOffset,
+                                isAnchor: anchorEntryId == nil,
+                                showSlider: showSlider && anchorEntryId == nil,
+                                onTap: {
+                                    withAnimation(TimefolkTheme.Animation.smooth) {
+                                        if showSlider && anchorEntryId == nil {
+                                            showSlider = false
+                                            timeOffset = 0.0
+                                        } else {
+                                            anchorEntryId = nil
+                                            showSlider = true
                                         }
                                     }
+                                },
+                                onRightClick: {
+                                    router.setActiveRoute(to: .editProfile)
+                                },
+                                onCloseSlider: {
+                                    withAnimation(TimefolkTheme.Animation.quick) {
+                                        showSlider = false
+                                        timeOffset = 0.0
+                                    }
+                                }
+                            )
+                            .id("local-user-entry")
 
-                                    .id(entry.id)
+                            // 好友列表
+                            ForEach(sortedEntries) { entry in
+                                EntryRow(
+                                    entry: entry,
+                                    currentDate: context.date,
+                                    timeOffset: $timeOffset,
+                                    isAnchor: anchorEntryId == entry.id,
+                                    showSlider: showSlider && anchorEntryId == entry.id,
+                                    onTap: {
+                                        withAnimation(TimefolkTheme.Animation.smooth) {
+                                            if showSlider && anchorEntryId == entry.id {
+                                                showSlider = false
+                                                timeOffset = 0.0
+                                            } else {
+                                                anchorEntryId = entry.id
+                                                showSlider = true
+                                            }
+                                        }
+                                    },
+                                    onRightClick: {
+                                        router.setActiveRoute(to: .editTimeZone(entryId: entry.id))
+                                    },
+                                    onCloseSlider: {
+                                        withAnimation(TimefolkTheme.Animation.quick) {
+                                            showSlider = false
+                                            timeOffset = 0.0
+                                        }
+                                    }
+                                )
+                                .id(entry.id)
                             }
                             .animation(.easeInOut(duration: 0.1), value: sortedEntries.count)
                         }
+
                         Color.clear
                             .frame(height: 2)
                             .onAppear {
@@ -48,44 +96,40 @@ struct MainView: View {
                                 isAtBottom = true
                             }
                     }
-                    .padding(.horizontal, 6)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 6)
                 }
                 .scrollIndicators(.hidden)
             }
-            if showSlider {
-                EntryTimeSlider(timeOffset: $timeOffset)
-                    .onDisappear {
-                        withAnimation {
-                            timeOffset = 0.0
-                        }
-                    }
-            }
+
             BottomBarView(isAtBottom: $isAtBottom, sortOrder: $sortOrder, showSlider: $showSlider)
         }
         .frame(maxHeight: .infinity)
-        .padding(.top, 6)
-        .alert("Could not delete time zone", isPresented: Binding(
+        .alert("删除失败", isPresented: Binding(
             get: { operationError != nil },
             set: { if !$0 { operationError = nil } }
         )) {
-            Button("OK") { operationError = nil }
+            Button("好") { operationError = nil }
         } message: {
             Text(operationError ?? "")
         }
-        .task {
-            guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil,
-                  !CommandLine.arguments.contains("-ui-testing") else { return }
-            let id = PostHogSDK.shared.getAnonymousId()
-            PostHogSDK.shared.identify(id, userProperties: ["email": UserDefaults.standard.string(forKey: "userEmail") ?? ""])
-        }
+    }
 
+    @AppStorage("userTimezoneIdentifier") private var userTimezoneIdentifier: String = ""
+
+    private var effectiveLocalTimeZone: TimeZone {
+        if !userTimezoneIdentifier.isEmpty, let tz = TimeZone(identifier: userTimezoneIdentifier) {
+            return tz
+        }
+        return TimeZone.current
     }
 
     private var sortedEntries: [Entry] {
         let now = Date().addingTimeInterval(timeOffset * 3600)
+        let tz = effectiveLocalTimeZone
         return fetcher.entries.sorted {
-            let left = $0.offsetDifference(at: now)
-            let right = $1.offsetDifference(at: now)
+            let left = $0.offsetDifference(at: now, relativeTo: tz)
+            let right = $1.offsetDifference(at: now, relativeTo: tz)
             if left == right { return $0.id < $1.id }
             return sortOrder == .timeAscending ? left < right : left > right
         }
@@ -109,78 +153,6 @@ struct MainView: View {
 #Preview {
     MainView()
         .frame(width: 400, height: 400)
-}
-
-struct EntryTimeSlider: View {
-    @Binding var timeOffset: Double
-    @State private var previousValue: Double = 0
-    @State var currentHour: Double = Date().hour
-
-    var offset: String {
-        if timeOffset == 1 || timeOffset == -1 {
-            return "\(timeOffset > 0 ? "+" : "") \(timeOffset) hr"
-        } else {
-            return "\(timeOffset > 0 ? "+" : "")\(timeOffset) hrs"
-        }
-    }
-
-    var body: some View {
-        VStack(spacing: 8) {
-            HStack {
-                Text("\(offset)")
-                    .monospaced()
-                    .font(.callout)
-                    .foregroundColor(.gray)
-                    .contentTransition(.numericText())
-                Spacer()
-                Text(formattedTime())
-                    .monospaced()
-                    .font(.body)
-                    .fontWeight(.semibold)
-                    .contentTransition(.numericText())
-            }
-            Slider(value: $currentHour, in: 0 ... 23.5, step: 0.5)
-                .onChange(of: currentHour) { newValue in
-                    withAnimation {
-                        timeOffset = newValue - Date().hour
-                        if Int(newValue) != Int(previousValue) {
-                            performHapticFeedback()
-                        }
-                        previousValue = newValue
-                    }
-                }
-        }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 16)
-        .background(Color(NSColor.windowBackgroundColor))
-    }
-
-    private func formattedTime() -> String {
-        let formatter = DateFormatter()
-
-        // Get the system's locale
-        let locale = Locale.current
-
-        // Create a template that includes both 24-hour and 12-hour formats
-        let template = "j:mm"
-
-        // Generate the best format for the current locale
-        if let formatString = DateFormatter.dateFormat(fromTemplate: template, options: 0, locale: locale) {
-            formatter.dateFormat = formatString
-        } else {
-            // Fallback to a default format if generation fails
-            formatter.timeStyle = .short
-        }
-
-        formatter.locale = locale
-        let offsetDate = Date().addingTimeInterval(timeOffset * 3600)
-
-        return formatter.string(from: offsetDate)
-    }
-
-    private func performHapticFeedback() {
-        NSHapticFeedbackManager.defaultPerformer.perform(.levelChange, performanceTime: .default)
-    }
 }
 
 extension Date {

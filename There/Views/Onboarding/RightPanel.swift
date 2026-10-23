@@ -1,36 +1,41 @@
 // RightPanel.swift
 
-import PostHog
 import SwiftUI
 
 struct RightPanel: View {
-    @Binding var email: String
-    let saveEmail: () -> Void
+    @Binding var userName: String
+    let saveUser: () -> Void
     @EnvironmentObject var appState: AppState
     @Environment(\.presentationMode) var presentationMode
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Please enter your email")
-                .font(.callout)
-                .fontWeight(.medium)
-                .padding(.bottom, 2)
+        VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("你的称呼")
+                    .font(.headline)
+                    .foregroundColor(.primary)
 
-            Input(text: $email, placeholder: "dena@example.com")
+                Text("在时钟与时间推演中作为你的标识。")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.bottom, 6)
 
-            PrimaryButton(title: "Continue", action: {
-                saveEmail()
+            Input(text: $userName, placeholder: "比如：阿杰、Alex", icon: "person")
+
+            PrimaryButton(title: "开始使用", action: {
+                saveUser()
                 appState.presentMenu()
                 presentationMode.wrappedValue.dismiss()
-
             })
+            .padding(.top, 4)
 
-            SecondaryButton(title: "Skip", action: {
-                PostHogSDK.shared.capture("sign_up_skipped", properties: ["date": Date.now])
-                UserDefaults.standard.setValue(true, forKey: "hasCompletedInitialSetup")
+            SecondaryButton(title: "稍后设置", action: {
+                saveUser()
                 appState.presentMenu()
                 presentationMode.wrappedValue.dismiss()
             })
         }
+        .frame(maxWidth: 240)
     }
 }

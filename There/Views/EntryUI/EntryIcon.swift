@@ -4,48 +4,50 @@ import SwiftUI
 struct EntryIcon: View {
     let entry: Entry
     var date: Date = Date()
-    @Environment(\.colorScheme) var scheme
+    @Environment(\.colorScheme) private var scheme
     @Environment(\.database) var database
-    @State private var useClockIcon: Bool = false
 
-    var backgroundColor: Color {
-        if scheme == .dark {
-            return Color(NSColor.darkGray)
-        } else {
-            return Color.white.opacity(0.6)
-        }
+    private var circleBackground: Color {
+        scheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.04)
     }
 
     var body: some View {
-        Group {
-            if let data = entry.photoData, !data.isEmpty {
-                photoIcon(data: data)
-            } else if let flag = entry.flag, !flag.isEmpty {
-                placeIcon
-            } else {
-                defaultIcon
-            }
-        }
-        .overlay(alignment: .bottomTrailing) {
-            timeIcon
-        }
+        ZStack(alignment: .bottomTrailing) {
+            avatarContent
+                .frame(width: 40, height: 40)
 
+            timePeriodBadge
+                .offset(x: 3, y: 3)
+        }
+        .frame(width: 44, height: 44)
     }
 
-    private var placeIcon: some View {
-        Circle()
-            .fill(backgroundColor)
-            .frame(width: 45)
-            .overlay {
-                if let flag = entry.flag {
-                    Text(flag)
-                        .font(.largeTitle)
-                } else {
-                    Image(systemName: "clock")
-                        .font(.largeTitle)
-                        .foregroundColor(.secondary)
-                }
-            }
+    private var isTibo: Bool {
+        entry.name.caseInsensitiveCompare("Tibo") == .orderedSame ||
+        (entry.timezoneIdentifier == "Etc/GMT+8" && entry.name.localizedCaseInsensitiveContains("Tibo"))
+    }
+
+    @ViewBuilder
+    private var avatarContent: some View {
+        if let data = entry.photoData, !data.isEmpty {
+            photoIcon(data: data)
+        } else if isTibo, let tiboImage = NSImage(named: "tibo") {
+            tiboAvatar(image: tiboImage)
+        } else {
+            defaultIcon
+        }
+    }
+
+    private func tiboAvatar(image: NSImage) -> some View {
+        Image(nsImage: image)
+            .resizable()
+            .scaledToFill()
+            .frame(width: 40, height: 40)
+            .clipShape(Circle())
+            .overlay(
+                Circle()
+                    .strokeBorder(Color.primary.opacity(0.1), lineWidth: 0.5)
+            )
     }
 
     private func photoIcon(data: String) -> some View {
@@ -57,12 +59,14 @@ struct EntryIcon: View {
                         image
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .frame(width: 45, height: 45)
+                            .frame(width: 40, height: 40)
                             .clipShape(Circle())
-                    case .failure:
+                            .overlay(
+                                Circle()
+                                    .strokeBorder(Color.primary.opacity(0.1), lineWidth: 0.5)
+                            )
+                    case .failure, .empty:
                         defaultIcon
-                    case .empty:
-                        ProgressView()
                     @unknown default:
                         defaultIcon
                     }
@@ -75,32 +79,33 @@ struct EntryIcon: View {
 
     private var defaultIcon: some View {
         Circle()
-            .fill(backgroundColor)
-            .frame(width: 45)
-            .overlay {
-                if let flag = entry.flag, !flag.isEmpty {
-                    Text(flag)
-                        .font(.largeTitle)
-                } else {
-                    Image(systemName: "clock")
-                        .font(.largeTitle)
-                        .foregroundColor(.secondary)
-                }
-            }
-    }
-
-    private var timeIcon: some View {
-        Image(entry.dayPeriod(at: date).rawValue)
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(width: 14, height: 14)
-            .background(
-                TransparentBackgroundView()
-                    .frame(width: 18, height: 18)
-                    .cornerRadius(50)
+            .fill(circleBackground)
+            .overlay(
+                Image(systemName: entry.type == .place ? "mappin.circle.fill" : "person.crop.circle.fill")
+                    .font(.system(size: 20))
+                    .foregroundColor(entry.type == .place ? .accentColor : .secondary)
             )
-            .padding(.bottom, 4)
-            .padding(.trailing, -3)
+            .overlay(
+                Circle()
+                    .strokeBorder(Color.primary.opacity(0.08), lineWidth: 0.5)
+            )
     }
 
+    private var timePeriodBadge: some View {
+        ZStack {
+            Circle()
+                .fill(scheme == .dark ? Color(red: 0.18, green: 0.18, blue: 0.20) : Color.white)
+                .frame(width: 17, height: 17)
+                .shadow(color: Color.black.opacity(0.2), radius: 1.5, x: 0, y: 1)
+
+            Image(entry.dayPeriod(at: date).rawValue)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 12, height: 12)
+        }
+        .overlay(
+            Circle()
+                .strokeBorder(Color.primary.opacity(0.12), lineWidth: 0.5)
+        )
+    }
 }

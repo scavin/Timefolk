@@ -5,9 +5,10 @@ struct StyledLabel: View {
     
     var body: some View {
         Text(title)
-            .font(.caption)
-            .fontWeight(.semibold)
+            .font(.system(size: 11, weight: .semibold))
             .foregroundColor(.secondary)
+            .textCase(.uppercase)
+            .tracking(0.4)
     }
 }
 

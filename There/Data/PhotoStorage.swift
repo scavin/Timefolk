@@ -10,7 +10,8 @@ struct PhotoStorage {
     }
 
     func save(_ image: NSImage?) throws -> String? {
-        guard let image else { return nil }
+        guard let rawImage = image else { return nil }
+        let image = rawImage.resizedForAvatar(maxPixelSize: 512)
         guard let data = image.tiffRepresentation,
               let bitmap = NSBitmapImageRep(data: data),
               let png = bitmap.representation(using: .png, properties: [:]) else {
@@ -21,6 +22,33 @@ struct PhotoStorage {
         let url = photos.appendingPathComponent(UUID().uuidString + ".png")
         try png.write(to: url, options: .atomic)
         return url.absoluteString
+    }
+
+    static func load(from pathString: String) -> NSImage? {
+        guard !pathString.isEmpty else { return nil }
+        let targetURL: URL
+        if let url = URL(string: pathString), url.isFileURL {
+            targetURL = url
+        } else {
+            targetURL = URL(fileURLWithPath: pathString)
+        }
+
+        if let image = NSImage(contentsOf: targetURL) {
+            return image
+        }
+
+        // Fallback: If migrated across sandbox containers, absolute paths might differ.
+        // Try looking up the filename inside current container's Photos directory.
+        let filename = targetURL.lastPathComponent
+        if !filename.isEmpty,
+           let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first {
+            let fallbackURL = appSupport.appendingPathComponent("Photos", isDirectory: true).appendingPathComponent(filename)
+            if let image = NSImage(contentsOf: fallbackURL) {
+                return image
+            }
+        }
+
+        return nil
     }
 
     func remove(_ path: String?) {
@@ -54,5 +82,27 @@ extension AppDatabase {
             photos.remove(photoPath)
             throw error
         }
+    }
+}
+
+extension NSImage {
+    func resizedForAvatar(maxPixelSize: CGFloat = 512) -> NSImage {
+        let size = self.size
+        guard size.width > 0 && size.height > 0 else { return self }
+        let maxDimension = max(size.width, size.height)
+        guard maxDimension > maxPixelSize else { return self }
+
+        let scale = maxPixelSize / maxDimension
+        let newSize = NSSize(width: max(1, round(size.width * scale)), height: max(1, round(size.height * scale)))
+
+        let newImage = NSImage(size: newSize)
+        newImage.lockFocus()
+        NSGraphicsContext.current?.imageInterpolation = .high
+        self.draw(in: NSRect(origin: .zero, size: newSize),
+                  from: NSRect(origin: .zero, size: size),
+                  operation: .copy,
+                  fraction: 1.0)
+        newImage.unlockFocus()
+        return newImage
     }
 }

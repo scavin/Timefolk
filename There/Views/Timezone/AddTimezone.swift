@@ -5,7 +5,6 @@ import SwiftUI
 struct AddTimezone: View {
     @Environment(\.database) var database
     @StateObject private var searchCompleter = SearchCompleter()
-
     @EnvironmentObject var router: Router
 
     @State var image: NSImage?
@@ -14,44 +13,46 @@ struct AddTimezone: View {
     @State var errorMessage: String?
     @State var selectedTimeZone: TimeZone? = nil
     @State var isShowingPopover = false
-    @State var countryEmoji = ""
 
     @State var showingXAccountInput = false
     @State var showingTGAccountInput = false
 
     var body: some View {
-        VStack(alignment: .center, spacing: 0) {
-            IconSection(
-                image: $image,
-                countryEmoji: $countryEmoji,
-                showingXAccountInput: $showingXAccountInput,
-                showingTGAccountInput: $showingTGAccountInput
-            )
+        VStack(spacing: 0) {
+            Titlebar()
 
-            FormSection(
-                name: $name,
-                city: $city,
-                selectedTimeZone: $selectedTimeZone,
-                isShowingPopover: $isShowingPopover,
-                searchCompleter: searchCompleter,
-                countryEmoji: $countryEmoji,
-                image: $image,
-                showingTGAccountInput: $showingTGAccountInput,
-                showingXAccountInput: $showingXAccountInput,
-                saveError: errorMessage,
-                saveEntry: saveEntry
-            )
+            ScrollView(.vertical) {
+                VStack(spacing: 12) {
+                    IconSection(
+                        image: $image,
+                        showingXAccountInput: $showingXAccountInput,
+                        showingTGAccountInput: $showingTGAccountInput
+                    )
+
+                    FormSection(
+                        name: $name,
+                        city: $city,
+                        selectedTimeZone: $selectedTimeZone,
+                        isShowingPopover: $isShowingPopover,
+                        searchCompleter: searchCompleter,
+                        image: $image,
+                        showingTGAccountInput: $showingTGAccountInput,
+                        showingXAccountInput: $showingXAccountInput,
+                        saveError: errorMessage,
+                        saveEntry: saveEntry
+                    )
+                }
+                .padding(.top, 4)
+                .padding(.bottom, 16)
+            }
+            .scrollIndicators(.hidden)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-        .overlay(alignment: .topLeading) {
-            Titlebar()
-                .padding(6)
-        }
     }
 }
 
 #Preview {
     AddTimezone()
-        .frame(width: 300, height: 400)
+        .frame(width: 320, height: 440)
+        .environmentObject(Router())
 }
