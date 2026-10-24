@@ -52,14 +52,9 @@ struct IconView: View {
         Circle()
             .fill(scheme == .dark ? Color.white.opacity(0.06) : Color.black.opacity(0.04))
             .overlay(
-                VStack(spacing: 3) {
-                    Image(systemName: "camera.fill")
-                        .font(.system(size: 18))
-                        .foregroundColor(.accentColor)
-                    Text("头像")
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundColor(.secondary)
-                }
+                Image(systemName: "camera.fill")
+                    .font(.system(size: 20))
+                    .foregroundColor(.accentColor)
             )
             .overlay(
                 Circle()
@@ -71,11 +66,7 @@ struct IconView: View {
     }
 
     private var popoverContent: some View {
-        VStack(spacing: 12) {
-            Text("设置头像")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(.primary)
-
+        VStack(spacing: 10) {
             importButtons
 
             if showingXAccountInput {

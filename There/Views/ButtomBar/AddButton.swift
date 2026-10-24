@@ -1,15 +1,20 @@
 import SwiftUI
 
 struct AddButton: View {
-    @State private var addHovered: Bool = false
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var router: Router
 
     var body: some View {
-        CompactButton(title: "添加") {
+        Button {
             router.setActiveRoute(to: .addTimezone)
+        } label: {
+            Image(systemName: "plus")
+                .font(.system(size: 13, weight: .medium))
         }
+        .buttonStyle(SettingsButtonStyle())
+        .help("添加")
         .accessibilityIdentifier("timezone.add")
+        .accessibilityLabel("添加")
     }
 }
 

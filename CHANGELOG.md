@@ -1,5 +1,24 @@
 # Changelog
 
+## 2.2 — 2026-10-24
+
+- **Support arbitrary calendar time travel (>3 days)**:
+  - Add native macOS calendar picker popover allowing users to pick and simulate any past or future date beyond the standard ±3 days window.
+  - Implement custom `CleanNativeDatePicker` bridging AppKit's `NSDatePicker`: completely eliminate the macOS system focus ring (`focusRingType = .none`, `drawFocusRingMask = nil`), bezel borders, and grey fill boxes, seamlessly blending with macOS popover frosted glass material.
+  - Scale up the calendar (+28%) to 180×190 with balanced padding for effortless readability and comfortable cursor targeting.
+  - Anchor the calendar popover firmly to the leading calendar icon, preventing horizontal shifting or jitter when date text length changes.
+  - Support continuous date selection without closing the popover; dismisses only on outside click.
+  - Ensure friend card dates and weekdays format on a single line (`M月d日 EEE`, e.g. `10月20日 周二`) with `.lineLimit(1).fixedSize()` when scrubbing beyond 3 days.
+- **Minimalist macOS layout overhaul (Clean UI)**:
+  - Strictly adhere to *"Avoid unnecessary secondary labels and descriptions. Let the layout do the explaining"*.
+  - Remove all redundant capitalized section headers and descriptive instructional copy across Add Friend, Edit Friend, and Personal Profile forms.
+  - Remove duplicate city names when an entry has no custom alias, displaying a clean single-line title.
+  - Streamline relative time difference formatting (e.g. `+8h` / `-3h`, completely blank when 0 offset).
+  - Remove obsolete `[基准]` badge and `(我)` suffix from the user's local reference card.
+  - Re-style bottom Add button into an icon-only `+` button with symmetrical dimensions matching the Settings gear.
+  - Unify time travel reset into a single button located beside Settings, keeping offset intact when collapsing the slider until explicit reset or window reopen.
+  - Remove redundant "个人资料…" and debug "抹掉数据" items from the Settings menu (profile editing is triggered directly via right-clicking the avatar card).
+
 ## 2.1 — 2026-10-23
 
 - Fix missing app icon on compiled .app bundle: configure `ASSETCATALOG_COMPILER_APPICON_NAME`, generate multi-resolution 16px–1024px `AppIcon.appiconset` and `AppIcon.icns`, and ensure both `CFBundleIconFile` and `CFBundleIconName` are populated in `Info.plist`.

@@ -64,6 +64,12 @@ struct EntryRow: View {
         entry.name.isEmpty ? entry.city : entry.name
     }
 
+    private var hasCustomName: Bool {
+        let trimmedName = entry.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedCity = entry.city.trimmingCharacters(in: .whitespacesAndNewlines)
+        return !trimmedName.isEmpty && trimmedName.caseInsensitiveCompare(trimmedCity) != .orderedSame
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             // 基本信息栏（点击直接进入时间穿梭，右键直接进入编辑）
@@ -71,29 +77,19 @@ struct EntryRow: View {
                 EntryIcon(entry: entry, date: currentDate.addingTimeInterval(timeOffset * 3600))
 
                 VStack(alignment: .leading, spacing: 1) {
-                    HStack(spacing: 4) {
-                        Text(entryDisplayName)
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(.primary)
-                            .lineLimit(1)
-
-                        if isAnchor && (showSlider || timeOffset != 0) {
-                            Text("基准")
-                                .font(.system(size: 9, weight: .bold, design: .rounded))
-                                .padding(.horizontal, 5)
-                                .padding(.vertical, 1.5)
-                                .background(
-                                    Capsule()
-                                        .fill(Color.accentColor)
-                                )
-                                .foregroundColor(.white)
-                        }
-                    }
-
-                    Text(entry.city)
-                        .font(.system(size: 11, weight: .regular))
-                        .foregroundColor(.secondary)
+                    Text(entryDisplayName)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.primary)
                         .lineLimit(1)
+                        .truncationMode(.tail)
+
+                    if hasCustomName {
+                        Text(entry.city)
+                            .font(.system(size: 11, weight: .regular))
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                    }
                 }
 
                 Spacer()
@@ -105,10 +101,12 @@ struct EntryRow: View {
                         .foregroundColor(.primary)
                         .contentTransition(.numericText())
 
-                    HStack(spacing: 3) {
+                    HStack(spacing: 4) {
                         if let dayDiff = relativeDayDifference() {
                             Text(dayDiff)
                                 .font(.system(size: 9, weight: .bold, design: .rounded))
+                                .lineLimit(1)
+                                .fixedSize(horizontal: true, vertical: false)
                                 .padding(.horizontal, 5)
                                 .padding(.vertical, 1.5)
                                 .background(
@@ -118,12 +116,15 @@ struct EntryRow: View {
                                 .foregroundColor(scheme == .dark ? .white : .accentColor)
                         }
 
-                        Text(formatTimeDifference())
-                            .font(.system(size: 11, weight: .medium, design: .rounded))
-                            .monospacedDigit()
-                            .foregroundColor(.secondary)
+                        if let timeDiff = formatTimeDifference() {
+                            Text(timeDiff)
+                                .font(.system(size: 11, weight: .medium, design: .rounded))
+                                .monospacedDigit()
+                                .foregroundColor(.secondary)
+                        }
                     }
                 }
+                .fixedSize(horizontal: true, vertical: false)
             }
             .contentShape(Rectangle())
             .onTapGesture {
@@ -200,16 +201,16 @@ struct EntryRow: View {
         return formatter.string(from: offsetDate)
     }
 
-    private func formatTimeDifference() -> String {
+    private func formatTimeDifference() -> String? {
         let date = currentDate.addingTimeInterval(timeOffset * 3600)
         let seconds = entry.offsetDifference(at: date, relativeTo: effectiveLocalTimeZone)
-        if seconds == 0 { return "无时差" }
+        if seconds == 0 { return nil }
         let hours = Double(seconds) / 3600.0
         let formatted = String(format: "%.1f", abs(hours)).replacingOccurrences(of: ".0", with: "")
         if hours > 0 {
-            return "快 \(formatted) 小时"
+            return "+\(formatted)h"
         } else {
-            return "慢 \(formatted) 小时"
+            return "-\(formatted)h"
         }
     }
 
@@ -247,11 +248,11 @@ struct EntryRow: View {
         } else if dayDiff == -2 {
             return "前天"
         } else if dayDiff > 2 || dayDiff < -2 {
-            let weekdayFormatter = DateFormatter()
-            weekdayFormatter.timeZone = tz
-            weekdayFormatter.locale = Locale(identifier: "zh_CN")
-            weekdayFormatter.dateFormat = "EEE"
-            return weekdayFormatter.string(from: targetDate)
+            let formatter = DateFormatter()
+            formatter.timeZone = tz
+            formatter.locale = Locale(identifier: "zh_CN")
+            formatter.dateFormat = "M月d日 EEE"
+            return formatter.string(from: targetDate)
         }
         return nil
     }
@@ -285,7 +286,7 @@ struct LocalEntryRow: View {
 
     private var displayName: String {
         let trimmed = userName.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? "我的时间" : "\(trimmed) (我)"
+        return trimmed.isEmpty ? "我的时间" : trimmed
     }
 
     private var subtitle: String {
@@ -295,10 +296,8 @@ struct LocalEntryRow: View {
             ?? tz.abbreviation()
             ?? tz.identifier
         let cityName = userCustomCity.trimmingCharacters(in: .whitespacesAndNewlines)
-        if userTimezoneIdentifier.isEmpty {
-            return "本地 · \(name)"
-        } else if cityName.isEmpty {
-            return "\(name)"
+        if cityName.isEmpty {
+            return name
         } else {
             let shortCity = cityName.components(separatedBy: ",").first?.trimmingCharacters(in: .whitespaces) ?? cityName
             return "\(shortCity) · \(name)"
@@ -313,29 +312,17 @@ struct LocalEntryRow: View {
                     .frame(width: 40, height: 40)
 
                 VStack(alignment: .leading, spacing: 1) {
-                    HStack(spacing: 4) {
-                        Text(displayName)
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(.primary)
-                            .lineLimit(1)
-
-                        if isAnchor && (showSlider || timeOffset != 0) {
-                            Text("基准")
-                                .font(.system(size: 9, weight: .bold, design: .rounded))
-                                .padding(.horizontal, 5)
-                                .padding(.vertical, 1.5)
-                                .background(
-                                    Capsule()
-                                        .fill(Color.accentColor)
-                                )
-                                .foregroundColor(.white)
-                        }
-                    }
+                    Text(displayName)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
 
                     Text(subtitle)
                         .font(.system(size: 11, weight: .regular))
                         .foregroundColor(.secondary)
                         .lineLimit(1)
+                        .truncationMode(.tail)
                 }
 
                 Spacer()
@@ -347,24 +334,21 @@ struct LocalEntryRow: View {
                         .foregroundColor(.primary)
                         .contentTransition(.numericText())
 
-                    HStack(spacing: 3) {
-                        if let dayDiff = relativeDayDifference() {
-                            Text(dayDiff)
-                                .font(.system(size: 9, weight: .bold, design: .rounded))
-                                .padding(.horizontal, 5)
-                                .padding(.vertical, 1.5)
-                                .background(
-                                    Capsule()
-                                        .fill(scheme == .dark ? Color.accentColor : Color.accentColor.opacity(0.15))
-                                )
-                                .foregroundColor(scheme == .dark ? .white : .accentColor)
-                        }
-
-                        Text(userTimezoneIdentifier.isEmpty ? "本地" : "我的时区")
-                            .font(.system(size: 11, weight: .medium, design: .rounded))
-                            .foregroundColor(.secondary)
+                    if let dayDiff = relativeDayDifference() {
+                        Text(dayDiff)
+                            .font(.system(size: 9, weight: .bold, design: .rounded))
+                            .lineLimit(1)
+                            .fixedSize(horizontal: true, vertical: false)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1.5)
+                            .background(
+                                Capsule()
+                                    .fill(scheme == .dark ? Color.accentColor : Color.accentColor.opacity(0.15))
+                            )
+                            .foregroundColor(scheme == .dark ? .white : .accentColor)
                     }
                 }
+                .fixedSize(horizontal: true, vertical: false)
             }
             .contentShape(Rectangle())
             .onTapGesture {
@@ -548,13 +532,74 @@ struct LocalEntryRow: View {
         } else if dayDiff == -2 {
             return "前天"
         } else if dayDiff > 2 || dayDiff < -2 {
-            let weekdayFormatter = DateFormatter()
-            weekdayFormatter.timeZone = effectiveLocalTimeZone
-            weekdayFormatter.locale = Locale(identifier: "zh_CN")
-            weekdayFormatter.dateFormat = "EEE"
-            return weekdayFormatter.string(from: targetDate)
+            let formatter = DateFormatter()
+            formatter.timeZone = effectiveLocalTimeZone
+            formatter.locale = Locale(identifier: "zh_CN")
+            formatter.dateFormat = "M月d日 EEE"
+            return formatter.string(from: targetDate)
         }
         return nil
+    }
+}
+
+// MARK: - NativeDatePickerView
+final class CleanNativeDatePicker: NSDatePicker {
+    override var focusRingType: NSFocusRingType {
+        get { .none }
+        set { }
+    }
+    override func drawFocusRingMask() {}
+    override var focusRingMaskBounds: NSRect { .zero }
+}
+
+struct NativeDatePickerView: NSViewRepresentable {
+    @Binding var selectedDate: Date
+    var timeZone: TimeZone? = nil
+    var onChange: (Date) -> Void = { _ in }
+
+    func makeNSView(context: Context) -> CleanNativeDatePicker {
+        let picker = CleanNativeDatePicker()
+        picker.datePickerStyle = .clockAndCalendar
+        picker.datePickerElements = .yearMonthDay
+        picker.focusRingType = .none
+        picker.isBezeled = false
+        picker.isBordered = false
+        picker.drawsBackground = false
+        if let cell = picker.cell as? NSDatePickerCell {
+            cell.focusRingType = .none
+        }
+        if let timeZone = timeZone {
+            picker.timeZone = timeZone
+        }
+        picker.target = context.coordinator
+        picker.action = #selector(Coordinator.dateChanged(_:))
+        return picker
+    }
+
+    func updateNSView(_ nsView: CleanNativeDatePicker, context: Context) {
+        if let timeZone = timeZone, nsView.timeZone != timeZone {
+            nsView.timeZone = timeZone
+        }
+        if abs(nsView.dateValue.timeIntervalSince(selectedDate)) > 1.0 {
+            nsView.dateValue = selectedDate
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+
+    class Coordinator: NSObject {
+        var parent: NativeDatePickerView
+
+        init(_ parent: NativeDatePickerView) {
+            self.parent = parent
+        }
+
+        @objc func dateChanged(_ sender: NSDatePicker) {
+            parent.selectedDate = sender.dateValue
+            parent.onChange(sender.dateValue)
+        }
     }
 }
 
@@ -570,9 +615,25 @@ struct InlineTimeSlider: View {
     @State private var sliderValue: Double = 0.0
     @State private var previousValue: Double = 0.0
     @State private var eventAddedNotice: Bool = false
+    @State private var showingDatePicker: Bool = false
+    @State private var selectedCalendarDate: Date = Date()
+    @State private var isSpecificDateMode: Bool = false
+    @State private var specificDateDayStart: Date? = nil
+    @State private var specificDateHour: Double = 12.0
     @Environment(\.colorScheme) private var scheme
 
     private var offsetText: String {
+        if isSpecificDateMode, let dayStart = specificDateDayStart {
+            var cal = Calendar(identifier: .gregorian)
+            if let tz = TimeZone(identifier: timeZoneIdentifier) { cal.timeZone = tz }
+            let targetDate = dayStart.addingTimeInterval(specificDateHour * 3600)
+            let formatter = DateFormatter()
+            formatter.timeZone = cal.timeZone
+            formatter.locale = Locale(identifier: "zh_CN")
+            formatter.dateFormat = "M月d日 EEE"
+            return formatter.string(from: targetDate)
+        }
+
         if timeOffset == 0 {
             return "此刻"
         }
@@ -600,29 +661,58 @@ struct InlineTimeSlider: View {
                 .padding(.top, 4)
                 .padding(.bottom, 2)
 
-            // 顶部信息：偏移状态 + 添加到日历 + 回到此刻 + 收起按钮
+            // 顶部信息：偏移状态/日期（点击选日历） + 添加到日历 + 回到此刻 + 收起按钮
             HStack(alignment: .center, spacing: 6) {
-                // 偏移量提示胶囊
-                HStack(spacing: 4) {
-                    Image(systemName: "clock.arrow.circlepath")
-                        .font(.system(size: 10, weight: .semibold))
-                    Text(offsetText)
-                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                // 可交互的日期/偏移量提示胶囊
+                Button {
+                    var cal = Calendar(identifier: .gregorian)
+                    if let tz = TimeZone(identifier: timeZoneIdentifier) { cal.timeZone = tz }
+                    let currentTarget = currentDate.addingTimeInterval(timeOffset * 3600)
+                    selectedCalendarDate = currentTarget
+                    showingDatePicker.toggle()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: isSpecificDateMode ? "calendar" : "clock.arrow.circlepath")
+                            .font(.system(size: 10, weight: .semibold))
+                            .frame(width: 14, height: 14)
+                            .popover(isPresented: $showingDatePicker) {
+                                NativeDatePickerView(
+                                    selectedDate: $selectedCalendarDate,
+                                    timeZone: TimeZone(identifier: timeZoneIdentifier)
+                                ) { newDate in
+                                    selectDateFromCalendar(newDate)
+                                }
+                                .frame(width: 140, height: 148)
+                                .scaleEffect(1.28, anchor: .center)
+                                .frame(width: 180, height: 190)
+                                .padding(10)
+                            }
+
+                        Text(offsetText)
+                            .font(.system(size: 11, weight: .semibold, design: .rounded))
+                            .lineLimit(1)
+
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 7, weight: .bold))
+                            .opacity(0.6)
+                    }
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3)
+                    .background(
+                        Capsule()
+                            .fill((timeOffset == 0 && !isSpecificDateMode)
+                                ? (scheme == .dark ? Color.white.opacity(0.10) : Color.black.opacity(0.05))
+                                : (scheme == .dark ? Color.accentColor : Color.accentColor.opacity(0.18)))
+                    )
+                    .foregroundColor((timeOffset == 0 && !isSpecificDateMode) ? .secondary : (scheme == .dark ? .white : .accentColor))
+                    .contentTransition(.numericText())
                 }
-                .padding(.horizontal, 7)
-                .padding(.vertical, 3)
-                .background(
-                    Capsule()
-                        .fill(timeOffset == 0
-                            ? (scheme == .dark ? Color.white.opacity(0.10) : Color.black.opacity(0.05))
-                            : (scheme == .dark ? Color.accentColor : Color.accentColor.opacity(0.18)))
-                )
-                .foregroundColor(timeOffset == 0 ? .secondary : (scheme == .dark ? .white : .accentColor))
-                .contentTransition(.numericText())
+                .buttonStyle(.plain)
+                .help("选择具体日期查看作息")
 
                 Spacer()
 
-                // 添加日历事件按钮（精致纯图标设计）
+                // 添加日历事件按钮（低调精致按钮风格）
                 Button {
                     var cal = Calendar(identifier: .gregorian)
                     if let tz = TimeZone(identifier: timeZoneIdentifier) { cal.timeZone = tz }
@@ -654,89 +744,127 @@ struct InlineTimeSlider: View {
                 } label: {
                     Image(systemName: eventAddedNotice ? "checkmark" : "calendar.badge.plus")
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundColor(.white)
+                        .foregroundColor(eventAddedNotice ? .white : .primary)
                         .frame(width: 22, height: 22)
                         .background(
                             Circle()
-                                .fill(eventAddedNotice ? Color.green : Color.accentColor)
+                                .fill(eventAddedNotice
+                                    ? Color.green
+                                    : (scheme == .dark ? Color.white.opacity(0.12) : Color.black.opacity(0.06)))
                         )
-                        .shadow(color: Color.black.opacity(scheme == .dark ? 0.35 : 0.12), radius: 1, x: 0, y: 0.5)
                 }
                 .buttonStyle(.plain)
                 .help(eventAddedNotice ? "已在日历打开" : "在此时刻向日历添加事件")
-
-                if timeOffset != 0 {
-                    Button {
-                        withAnimation(TimefolkTheme.Animation.quick) {
-                            sliderValue = 0.0
-                            timeOffset = 0.0
-                            performHapticFeedback()
-                        }
-                    } label: {
-                        HStack(spacing: 3) {
-                            Image(systemName: "arrow.counterclockwise")
-                                .font(.system(size: 9.5, weight: .semibold))
-                            Text("回到此刻")
-                                .font(.system(size: 10, weight: .medium))
-                        }
-                        .foregroundColor(.primary)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 3)
-                        .background(
-                            Capsule()
-                                .fill(scheme == .dark ? Color.white.opacity(0.12) : Color.black.opacity(0.06))
-                        )
-                    }
-                    .buttonStyle(.plain)
-                    .help("回到此刻")
-                    .transition(.opacity.combined(with: .scale(scale: 0.9)))
-                }
 
                 Button {
                     onClose()
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 13))
+                        .font(.system(size: 14))
                         .foregroundColor(.secondary.opacity(0.7))
+                        .frame(width: 22, height: 22)
                 }
                 .buttonStyle(.plain)
                 .help("收起")
             }
 
             // 穿梭滑块
-            Slider(value: $sliderValue, in: -72.0 ... 72.0, step: 0.5)
-                .tint(Color.accentColor)
-                .onChange(of: sliderValue) { newValue in
-                    updateTimeOffset(for: newValue)
-                    if Int(newValue) != Int(previousValue) {
-                        performHapticFeedback()
+            if isSpecificDateMode {
+                Slider(value: $sliderValue, in: 0.0 ... 24.0, step: 0.5)
+                    .tint(Color.accentColor)
+                    .onChange(of: sliderValue) { newValue in
+                        updateSpecificDateOffset(for: newValue)
+                        if Int(newValue) != Int(previousValue) {
+                            performHapticFeedback()
+                        }
+                        previousValue = newValue
                     }
-                    previousValue = newValue
-                }
 
-            // 快捷跳转标记点：前后各3天
-            HStack {
-                quickJumpButton(title: "-3天", targetSliderValue: -72.0)
-                Spacer()
-                quickJumpButton(title: "-1天", targetSliderValue: -24.0)
-                Spacer()
-                quickJumpButton(title: "此刻", targetSliderValue: 0.0)
-                Spacer()
-                quickJumpButton(title: "+1天", targetSliderValue: 24.0)
-                Spacer()
-                quickJumpButton(title: "+3天", targetSliderValue: 72.0)
+                // 24 小时快捷跳转标记点
+                HStack {
+                    quickHourButton(title: "00:00", targetHour: 0.0)
+                    Spacer()
+                    quickHourButton(title: "09:00", targetHour: 9.0)
+                    Spacer()
+                    quickHourButton(title: "12:00", targetHour: 12.0)
+                    Spacer()
+                    quickHourButton(title: "18:00", targetHour: 18.0)
+                    Spacer()
+                    quickHourButton(title: "22:00", targetHour: 22.0)
+                }
+                .padding(.horizontal, 2)
+            } else {
+                Slider(value: $sliderValue, in: -72.0 ... 72.0, step: 0.5)
+                    .tint(Color.accentColor)
+                    .onChange(of: sliderValue) { newValue in
+                        updateTimeOffset(for: newValue)
+                        if Int(newValue) != Int(previousValue) {
+                            performHapticFeedback()
+                        }
+                        previousValue = newValue
+                    }
+
+                // 快捷跳转标记点：前后各3天
+                HStack {
+                    quickJumpButton(title: "-3天", targetSliderValue: -72.0)
+                    Spacer()
+                    quickJumpButton(title: "-1天", targetSliderValue: -24.0)
+                    Spacer()
+                    quickJumpButton(title: "此刻", targetSliderValue: 0.0)
+                    Spacer()
+                    quickJumpButton(title: "+1天", targetSliderValue: 24.0)
+                    Spacer()
+                    quickJumpButton(title: "+3天", targetSliderValue: 72.0)
+                }
+                .padding(.horizontal, 2)
             }
-            .padding(.horizontal, 2)
         }
         .padding(.top, 2)
         .padding(.bottom, 2)
         .onAppear {
             syncSliderFromOffset()
         }
+        .onChange(of: timeOffset) { newOffset in
+            if newOffset == 0.0 {
+                isSpecificDateMode = false
+                specificDateDayStart = nil
+                syncSliderFromOffset()
+            }
+        }
+    }
+
+    private func selectDateFromCalendar(_ date: Date) {
+        var cal = Calendar(identifier: .gregorian)
+        if let tz = TimeZone(identifier: timeZoneIdentifier) { cal.timeZone = tz }
+
+        let dayStart = cal.startOfDay(for: date)
+        specificDateDayStart = dayStart
+        isSpecificDateMode = true
+
+        let currentHour = Double(cal.component(.hour, from: currentDate))
+        let currentMin = Double(cal.component(.minute, from: currentDate))
+        let initialHour = currentHour + (currentMin >= 30 ? 0.5 : 0.0)
+        specificDateHour = initialHour
+
+        let targetDate = dayStart.addingTimeInterval(initialHour * 3600)
+        timeOffset = targetDate.timeIntervalSince(currentDate) / 3600.0
+        sliderValue = initialHour
+        previousValue = initialHour
+        performHapticFeedback()
+    }
+
+    private func updateSpecificDateOffset(for newHour: Double) {
+        guard let dayStart = specificDateDayStart else { return }
+        specificDateHour = newHour
+        let targetDate = dayStart.addingTimeInterval(newHour * 3600)
+        timeOffset = targetDate.timeIntervalSince(currentDate) / 3600.0
     }
 
     private func syncSliderFromOffset() {
-        if timeOffset == 0.0 {
+        if isSpecificDateMode {
+            sliderValue = specificDateHour
+            previousValue = specificDateHour
+        } else if timeOffset == 0.0 {
             sliderValue = 0.0
             previousValue = 0.0
         } else {
@@ -774,6 +902,29 @@ struct InlineTimeSlider: View {
             withAnimation(TimefolkTheme.Animation.quick) {
                 sliderValue = targetSliderValue
                 updateTimeOffset(for: targetSliderValue)
+                performHapticFeedback()
+            }
+        } label: {
+            Text(title)
+                .font(.system(size: 10.5, weight: isSelected ? .bold : .regular, design: .rounded))
+                .foregroundColor(isSelected ? .white : .secondary)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2.5)
+                .background(
+                    Capsule()
+                        .fill(isSelected ? Color.accentColor : Color.clear)
+                )
+        }
+        .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private func quickHourButton(title: String, targetHour: Double) -> some View {
+        let isSelected = abs(sliderValue - targetHour) < 0.25
+        Button {
+            withAnimation(TimefolkTheme.Animation.quick) {
+                sliderValue = targetHour
+                updateSpecificDateOffset(for: targetHour)
                 performHapticFeedback()
             }
         } label: {

@@ -34,7 +34,6 @@ struct MainView: View {
                                     withAnimation(TimefolkTheme.Animation.smooth) {
                                         if showSlider && anchorEntryId == nil {
                                             showSlider = false
-                                            timeOffset = 0.0
                                         } else {
                                             anchorEntryId = nil
                                             showSlider = true
@@ -47,7 +46,6 @@ struct MainView: View {
                                 onCloseSlider: {
                                     withAnimation(TimefolkTheme.Animation.quick) {
                                         showSlider = false
-                                        timeOffset = 0.0
                                     }
                                 }
                             )
@@ -65,7 +63,6 @@ struct MainView: View {
                                         withAnimation(TimefolkTheme.Animation.smooth) {
                                             if showSlider && anchorEntryId == entry.id {
                                                 showSlider = false
-                                                timeOffset = 0.0
                                             } else {
                                                 anchorEntryId = entry.id
                                                 showSlider = true
@@ -78,7 +75,6 @@ struct MainView: View {
                                     onCloseSlider: {
                                         withAnimation(TimefolkTheme.Animation.quick) {
                                             showSlider = false
-                                            timeOffset = 0.0
                                         }
                                     }
                                 )
@@ -102,9 +98,25 @@ struct MainView: View {
                 .scrollIndicators(.hidden)
             }
 
-            BottomBarView(isAtBottom: $isAtBottom, sortOrder: $sortOrder, showSlider: $showSlider)
+            BottomBarView(
+                isAtBottom: $isAtBottom,
+                sortOrder: $sortOrder,
+                timeOffset: $timeOffset,
+                onResetTime: {
+                    withAnimation(TimefolkTheme.Animation.quick) {
+                        timeOffset = 0.0
+                    }
+                }
+            )
         }
         .frame(maxHeight: .infinity)
+        .onChange(of: appState.menuBarViewIsPresented) { isPresented in
+            if !isPresented {
+                // 窗口关闭时重置穿梭状态与滑块
+                showSlider = false
+                timeOffset = 0.0
+            }
+        }
         .alert("删除失败", isPresented: Binding(
             get: { operationError != nil },
             set: { if !$0 { operationError = nil } }

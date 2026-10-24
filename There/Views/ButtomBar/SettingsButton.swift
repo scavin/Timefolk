@@ -15,12 +15,6 @@ struct SettingsButton: View {
 
     var body: some View {
         Menu {
-            Button("个人资料…") {
-                router.setActiveRoute(to: .editProfile)
-            }
-
-            Divider()
-
             Toggle("开机启动", isOn: Binding(
                 get: { launchAtLogin },
                 set: { enabled in
@@ -56,21 +50,6 @@ struct SettingsButton: View {
                     router.setActiveRoute(to: .about)
                 }
             }
-
-            #if targetEnvironment(simulator) || DEBUG
-                Section("维护调试") {
-                    Button("抹掉数据") {
-                        UserDefaults.standard.removeObject(forKey: "hasCompletedInitialSetup")
-                        do {
-                            _ = try database.dbWriter.write { db in
-                                try Entry.deleteAll(db)
-                            }
-                        } catch {
-                            print("Can't clear DB \(error)")
-                        }
-                    }
-                }
-            #endif
 
             Divider()
 

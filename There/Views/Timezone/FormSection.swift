@@ -19,58 +19,51 @@ struct FormSection: View {
     let saveEntry: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            VStack(alignment: .leading, spacing: 6) {
-                StyledLabel(title: "朋友称呼")
-                Input(text: $name, placeholder: "比如：阿杰、伦敦办公室", icon: "person")
-                    .onSubmit {
-                        if !city.isEmpty && selectedTimeZone != nil {
-                            saveEntry()
-                        } else {
-                            withAnimation(TimefolkTheme.Animation.quick) {
-                                showError = true
-                            }
+        VStack(alignment: .leading, spacing: 10) {
+            Input(text: $name, placeholder: "名字（可选）", icon: "person")
+                .onSubmit {
+                    if !city.isEmpty && selectedTimeZone != nil {
+                        saveEntry()
+                    } else {
+                        withAnimation(TimefolkTheme.Animation.quick) {
+                            showError = true
                         }
                     }
+                }
+
+            Button {
+                withAnimation(TimefolkTheme.Animation.quick) {
+                    showError = false
+                }
+                isShowingPopover = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "mappin.and.ellipse")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(city.isEmpty ? .secondary : .accentColor)
+
+                    Text(city.isEmpty ? "搜索城市或时区…" : city)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(city.isEmpty ? .secondary : .primary)
+                        .lineLimit(1)
+
+                    Spacer()
+
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                }
             }
-
-            VStack(alignment: .leading, spacing: 6) {
-                StyledLabel(title: "所在城市")
-                
-                Button {
-                    withAnimation(TimefolkTheme.Animation.quick) {
-                        showError = false
-                    }
-                    isShowingPopover = true
-                } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: "mappin.and.ellipse")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(city.isEmpty ? .secondary : .accentColor)
-
-                        Text(city.isEmpty ? "选择城市" : city)
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(city.isEmpty ? .secondary : .primary)
-                            .lineLimit(1)
-
-                        Spacer()
-
-                        Image(systemName: "chevron.up.chevron.down")
-                            .font(.system(size: 11))
-                            .foregroundColor(.secondary)
-                    }
-                }
-                .buttonStyle(SecondaryButtonStyle())
-                .popover(isPresented: $isShowingPopover) {
-                    CitySearchResults(
-                        searchCompleter: searchCompleter,
-                        isShowingPopover: $isShowingPopover,
-                        selectedName: $name,
-                        selectedCity: $city,
-                        selectedTimezone: $selectedTimeZone,
-                        image: $image
-                    )
-                }
+            .buttonStyle(SecondaryButtonStyle())
+            .popover(isPresented: $isShowingPopover) {
+                CitySearchResults(
+                    searchCompleter: searchCompleter,
+                    isShowingPopover: $isShowingPopover,
+                    selectedName: $name,
+                    selectedCity: $city,
+                    selectedTimezone: $selectedTimeZone,
+                    image: $image
+                )
             }
 
             if showError {

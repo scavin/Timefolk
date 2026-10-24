@@ -90,35 +90,11 @@ struct EditProfileView: View {
                     .padding(.top, 4)
 
                     // 称呼输入
-                    VStack(alignment: .leading, spacing: 5) {
-                        StyledLabel(title: "你的称呼")
-                        Input(text: $name, placeholder: "比如：阿杰、Alex", icon: "person")
-
-                        Text("在时钟与时间推演中作为你的标识。")
-                            .font(.system(size: 11))
-                            .foregroundColor(.secondary)
-                            .padding(.horizontal, 2)
-                    }
-                    .padding(.horizontal, 24)
+                    Input(text: $name, placeholder: "称呼（如：阿杰、Alex）", icon: "person")
+                        .padding(.horizontal, 24)
 
                     // 所在时区与城市
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack {
-                            StyledLabel(title: "我的时区")
-                            Spacer()
-                            if selectedTimeZone != nil {
-                                Button("跟随系统时区") {
-                                    withAnimation(TimefolkTheme.Animation.quick) {
-                                        selectedTimeZone = nil
-                                        selectedCity = ""
-                                    }
-                                }
-                                .font(.system(size: 11, weight: .medium))
-                                .foregroundColor(.accentColor)
-                                .buttonStyle(.plain)
-                            }
-                        }
-
+                    VStack(spacing: 0) {
                         Button {
                             isShowingCityPopover = true
                         } label: {
@@ -143,13 +119,28 @@ struct EditProfileView: View {
                                         ?? sysTz.localizedName(for: .standard, locale: Locale(identifier: "zh_CN"))
                                         ?? sysTz.abbreviation()
                                         ?? sysTz.identifier
-                                    Text("跟随 Mac 系统时区（\(sysName)）")
+                                    Text("跟随系统（\(sysName)）")
                                         .font(.system(size: 13, weight: .medium))
                                         .foregroundColor(.primary)
                                         .lineLimit(1)
                                 }
 
                                 Spacer()
+
+                                if selectedTimeZone != nil {
+                                    Button {
+                                        withAnimation(TimefolkTheme.Animation.quick) {
+                                            selectedTimeZone = nil
+                                            selectedCity = ""
+                                        }
+                                    } label: {
+                                        Image(systemName: "arrow.counterclockwise")
+                                            .font(.system(size: 11, weight: .medium))
+                                            .foregroundColor(.secondary)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .help("恢复跟随系统时区")
+                                }
 
                                 Image(systemName: "chevron.up.chevron.down")
                                     .font(.system(size: 11))
@@ -166,13 +157,6 @@ struct EditProfileView: View {
                                 selectedTimezone: $selectedTimeZone
                             )
                         }
-
-                        Text(selectedTimeZone == nil
-                            ? "默认自动跟随当前电脑时区；如在异地或需要固定时区，可点击选择。"
-                            : "已固定为该时区，不再随电脑系统时区变动。")
-                            .font(.system(size: 11))
-                            .foregroundColor(.secondary)
-                            .padding(.horizontal, 2)
                     }
                     .padding(.horizontal, 24)
 
@@ -237,12 +221,12 @@ struct EditProfileView: View {
             .buttonStyle(SecondaryButtonStyle())
         case .telegram:
             socialInputField(
-                placeholder: "输入 Telegram 用户名，如 durov",
+                placeholder: "@username（如 durov）",
                 icon: "paperplane"
             )
         case .x:
             socialInputField(
-                placeholder: "输入 X 用户名，如 elonmusk",
+                placeholder: "@username（如 elonmusk）",
                 icon: "at"
             )
         }
@@ -352,14 +336,10 @@ struct EditProfileView: View {
             Circle()
                 .fill(Color.black.opacity(isHoveredOnAvatar ? 0.35 : 0.0))
                 .overlay(
-                    VStack(spacing: 2) {
-                        Image(systemName: "camera.fill")
-                            .font(.system(size: 16))
-                        Text("更换")
-                            .font(.system(size: 9, weight: .medium))
-                    }
-                    .foregroundColor(.white)
-                    .opacity(isHoveredOnAvatar ? 1.0 : 0.0)
+                    Image(systemName: "camera.fill")
+                        .font(.system(size: 18))
+                        .foregroundColor(.white)
+                        .opacity(isHoveredOnAvatar ? 1.0 : 0.0)
                 )
                 .animation(TimefolkTheme.Animation.quick, value: isHoveredOnAvatar)
         }

@@ -3,7 +3,8 @@ import SwiftUI
 struct BottomBarView: View {
     @Binding var isAtBottom: Bool
     @Binding var sortOrder: SortOrder
-    @Binding var showSlider: Bool
+    @Binding var timeOffset: Double
+    var onResetTime: () -> Void = {}
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
@@ -12,16 +13,19 @@ struct BottomBarView: View {
 
             Spacer()
 
-            Button {
-                withAnimation(TimefolkTheme.Animation.smooth) {
-                    showSlider.toggle()
+            if timeOffset != 0 {
+                Button {
+                    withAnimation(TimefolkTheme.Animation.quick) {
+                        onResetTime()
+                    }
+                } label: {
+                    Image(systemName: "arrow.counterclockwise")
+                        .font(.system(size: 13, weight: .medium))
                 }
-            } label: {
-                Image(systemName: "slider.horizontal.2.square")
-                    .font(.system(size: 13, weight: .medium))
+                .buttonStyle(SettingsButtonStyle())
+                .help("回到此刻")
+                .transition(.opacity.combined(with: .scale(scale: 0.9)))
             }
-            .buttonStyle(SettingsButtonStyle(isActive: showSlider))
-            .help("时间穿梭")
 
             SettingsButton(sortOrder: $sortOrder)
         }
@@ -43,5 +47,5 @@ struct BottomBarView: View {
 }
 
 #Preview {
-    BottomBarView(isAtBottom: .constant(true), sortOrder: .constant(.timeDescending), showSlider: .constant(false))
+    BottomBarView(isAtBottom: .constant(true), sortOrder: .constant(.timeDescending), timeOffset: .constant(0))
 }

@@ -48,15 +48,13 @@ struct SocialMediaInput: View {
     @Binding var debounceTask: Task<Void, Never>?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            StyledLabel(title: "输入 \(platform) 用户名")
-                .padding(.top, 4)
-            Input(
-                text: $username,
-                placeholder: platform == "X" ? "如：elonmusk" : "如：durov",
-                icon: "at"
-            )
-            .onChange(of: username) { value in
+        Input(
+            text: $username,
+            placeholder: platform == "X" ? "@username" : "用户名",
+            icon: "at"
+        )
+        .padding(.top, 2)
+        .onChange(of: username) { value in
                 debounceTask?.cancel()
 
                 let clean = value.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -84,7 +82,6 @@ struct SocialMediaInput: View {
                     }
                 }
             }
-        }
-        .onDisappear { debounceTask?.cancel() }
+            .onDisappear { debounceTask?.cancel() }
     }
 }
