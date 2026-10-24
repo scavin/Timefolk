@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.3 — 2026-10-24
+
+- **Tibo 时区夏令时与西雅图动态切换 (PST / PDT)**：
+  - 将 Tibo 预设及默认时区由固定的 `Etc/GMT+8`（固定 UTC−08:00）升级为标准 IANA 时区 `America/Los_Angeles`（涵盖西雅图地区）。
+  - 接入 macOS 底层 `tzdata` 时区数据库，在冬季标准时间（PST, UTC−08:00）与夏季夏令时（PDT, UTC−07:00）之间自动平滑切换，避免夏令时期间出现 1 小时时间偏差。
+  - 出厂预置默认城市规范为 `Seattle`，同时保持对现有数据库和专属头像资源的向前兼容。
+  - 时区搜索优化：输入 `Tibo`、`Seattle`、`西雅图`、`PST`、`PDT` 等均可一键命中。
+
 ## 2.2 — 2026-10-24
 
 - **Support arbitrary calendar time travel (>3 days)**:

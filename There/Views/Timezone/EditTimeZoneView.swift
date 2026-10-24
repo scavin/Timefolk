@@ -88,7 +88,7 @@ struct EditTimeZoneView: View {
             selectedTimeZone = TimeZone(identifier: fetched.timezoneIdentifier)
             if let path = fetched.photoData, let url = URL(string: path), url.isFileURL {
                 image = NSImage(contentsOf: url)
-            } else if (fetched.name.caseInsensitiveCompare("Tibo") == .orderedSame || fetched.timezoneIdentifier == "Etc/GMT+8"), let tiboAsset = NSImage(named: "tibo") {
+            } else if (fetched.name.caseInsensitiveCompare("Tibo") == .orderedSame || fetched.timezoneIdentifier == "America/Los_Angeles" || fetched.timezoneIdentifier == "Etc/GMT+8"), let tiboAsset = NSImage(named: "tibo") {
                 image = tiboAsset
             } else {
                 image = nil

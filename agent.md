@@ -59,14 +59,12 @@ Timefolk 是原生 macOS 菜单栏世界时钟，用来查看朋友、同事和�
 
 ## Tibo 时区的产品约定
 
-用户希望根据 Tibo 使用 PST 发布的 Codex reset 时间查看时钟。当前按明确的 **PST 固定 UTC−08:00** 实现，而不是洛杉矶随季节变化的当地时间。
+Tibo 常驻西雅图（Seattle）。在 v2.3 及之后，Tibo 预设与出厂默认好友统一采用遵循标准夏令时规则的 IANA 时区 **`America/Los_Angeles`**（西雅图归属时区），由系统底层 `tzdata` 时区数据库负责冬夏令时动态切换。
 
-- 预设使用 `TimeZoneSearchResult.tibo`，时区标识符为 `Etc/GMT+8`。注意 `Etc/GMT` 的符号方向与通常写法相反，不能改成 `Etc/GMT-8`。
-- 添加表单有 `🕒 Tibo time zone` 快捷选项；搜索 `Tibo`、`Codex`、`reset`、`PST` 可找到它。
-- 固定 PST 全年保持 UTC−8。原有 `PST` / 洛杉矶选项仍使用 `America/Los_Angeles`，夏季会切到 PDT。
-- 这是根据用户描述确定的功能约定，未独立核实 Tibo 每次公告是否严格区分 PST 与 PDT。
-- 当前只提供时钟；没有抓取公告、自动获取 reset 日程或倒计时功能。
-- 修改该语义前，应明确新的产品需求，并更新冬夏测试与界面说明。
+- 预设使用 `TimeZoneSearchResult.tibo`，时区标识符为 `America/Los_Angeles`，城市标为 `Seattle`。
+- 冬季为 PST（UTC−08:00），夏季自动平滑过渡为夏令时 PDT（UTC−07:00），杜绝夏令时偏差 1 小时的问题。
+- 搜索 `Tibo`、`Seattle`、`西雅图`、`Codex`、`reset`、`PST`、`PDT` 均可快速找到它。
+- 保持对历史版本 `Etc/GMT+8` 数据的向下兼容与专属头像匹配。
 
 ## 本轮已完成的维护
 

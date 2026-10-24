@@ -88,8 +88,8 @@ extension AppDatabase {
                     let tibo = Entry(
                         type: .person,
                         name: "Tibo",
-                        city: "PST (UTC−08:00)",
-                        timezoneIdentifier: "Etc/GMT+8",
+                        city: "Seattle",
+                        timezoneIdentifier: "America/Los_Angeles",
                         flag: nil,
                         photoData: nil
                     )

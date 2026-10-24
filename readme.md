@@ -2,7 +2,7 @@
 
 [![Swift](https://img.shields.io/badge/Swift-F54A2A?logo=swift&logoColor=white)](#) [![macOS](https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=F0F0F0)](#)
 
-A native macOS menu bar clock for friends, teammates and cities, with a fixed PST preset for Tibo’s Codex reset announcements.
+A native macOS menu bar clock for friends, teammates and cities, with automatic daylight saving support for Tibo in Seattle.
 
 Timefolk is an independently maintained continuation of [There](https://github.com/dena-sohrabi/There).
 
@@ -16,7 +16,7 @@ This maintenance fork currently builds from source. The Homebrew cask named
 - Add photos for people from X (Twitter), Telegram or pick locally
 - Add any city without knowing the time zone
 - Supports raw UTC offsets
-- Tibo time zone preset for Codex reset announcements, fixed at PST (UTC−08:00) year-round
+- Tibo time zone preset for Seattle, automatically switching between PST (UTC−08:00) and PDT (UTC−07:00) with seasonal daylight saving time
 - 0-1% idle CPU usage
 - Ultra-low memory
 - Written in Swift UI
@@ -62,11 +62,7 @@ The CI workflow is prepared but has not been run on GitHub.
 
 ### Tibo time zone
 
-In **Add**, choose **🕒 Tibo time zone**, then **Add** to save it. You can also
-search for `Tibo`, `Codex`, `reset` or `PST` in the time zone picker. This preset
-uses fixed PST (UTC−08:00) throughout the year. The separate Los Angeles option
-continues to follow daylight saving time. No reset schedule is fetched; the
-preset is a clock for interpreting announcements that explicitly use PST.
+Tibo resides in Seattle. You can search for `Tibo`, `Seattle`, `西雅图`, `Codex`, `reset`, `PST` or `PDT` in the time zone picker. This preset uses standard `America/Los_Angeles` (the IANA time zone for Seattle), transitioning seamlessly between PST (UTC−08:00) in winter and PDT (UTC−07:00) during daylight saving time using system `tzdata`.
 
 ### Dependencies
 

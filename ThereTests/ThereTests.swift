@@ -19,22 +19,32 @@ struct ThereTests {
         #expect((image?.size.width ?? 0) > 0)
     }
 
-    @Test func tiboUsesFixedPSTAcrossSeasons() async throws {
+    @Test func tiboFollowsSeattleDaylightSaving() async throws {
         let timezone = try #require(await TimeZoneSearchResult.tibo.getTimeZone())
+        #expect(timezone.identifier == "America/Los_Angeles")
+
         let formatter = ISO8601DateFormatter()
-        for timestamp in ["2026-01-15T18:00:00Z", "2026-07-15T18:00:00Z"] {
-            let date = try #require(formatter.date(from: timestamp))
-            #expect(timezone.secondsFromGMT(for: date) == -8 * 3600)
-            #expect(!timezone.isDaylightSavingTime(for: date))
+        let winterDate = try #require(formatter.date(from: "2026-01-15T18:00:00Z"))
+        let summerDate = try #require(formatter.date(from: "2026-07-15T18:00:00Z"))
 
-            var calendar = Calendar(identifier: .gregorian)
-            calendar.timeZone = timezone
-            #expect(calendar.component(.hour, from: date) == 10)
+        // Winter: PST (UTC-8)
+        #expect(timezone.secondsFromGMT(for: winterDate) == -8 * 3600)
+        #expect(!timezone.isDaylightSavingTime(for: winterDate))
+        var winterCal = Calendar(identifier: .gregorian)
+        winterCal.timeZone = timezone
+        #expect(winterCal.component(.hour, from: winterDate) == 10)
 
-            // The saved identifier must retain the fixed offset after reopening.
-            let restored = try #require(TimeZone(identifier: timezone.identifier))
-            #expect(restored.secondsFromGMT(for: date) == -8 * 3600)
-        }
+        // Summer: PDT (UTC-7)
+        #expect(timezone.secondsFromGMT(for: summerDate) == -7 * 3600)
+        #expect(timezone.isDaylightSavingTime(for: summerDate))
+        var summerCal = Calendar(identifier: .gregorian)
+        summerCal.timeZone = timezone
+        #expect(summerCal.component(.hour, from: summerDate) == 11)
+
+        // The saved identifier must retain America/Los_Angeles
+        let restored = try #require(TimeZone(identifier: timezone.identifier))
+        #expect(restored.secondsFromGMT(for: winterDate) == -8 * 3600)
+        #expect(restored.secondsFromGMT(for: summerDate) == -7 * 3600)
     }
 
     @Test func tiboIsSeededAsDefaultEntry() throws {
@@ -46,7 +56,8 @@ struct ThereTests {
         let entries = try db.dbWriter.read { try Entry.fetchAll($0) }
         #expect(entries.count == 1)
         #expect(entries.first?.name == "Tibo")
-        #expect(entries.first?.timezoneIdentifier == "Etc/GMT+8")
+        #expect(entries.first?.city == "Seattle")
+        #expect(entries.first?.timezoneIdentifier == "America/Los_Angeles")
     }
 
     @Test func tiboIsNotReseededWhenUserDeletesAllEntries() throws {
@@ -73,7 +84,7 @@ struct ThereTests {
         #expect(finalEntries.count == 0)
     }
 
-    @Test(arguments: ["Tibo", "tIbO", "Codex", "reset", "PST"])
+    @Test(arguments: ["Tibo", "tIbO", "Codex", "reset", "PST", "PDT", "Seattle"])
     func tiboCanBeFoundWithoutGeocoding(query: String) {
         var results: [TimeZoneSearchResult] = []
         TimeZoneSearchCompiler().search(query: query) { results = $0 }

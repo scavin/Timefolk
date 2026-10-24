@@ -24,7 +24,7 @@ struct EntryIcon: View {
 
     private var isTibo: Bool {
         entry.name.caseInsensitiveCompare("Tibo") == .orderedSame ||
-        (entry.timezoneIdentifier == "Etc/GMT+8" && entry.name.localizedCaseInsensitiveContains("Tibo"))
+        ((entry.timezoneIdentifier == "America/Los_Angeles" || entry.timezoneIdentifier == "Etc/GMT+8") && entry.name.localizedCaseInsensitiveContains("Tibo"))
     }
 
     @ViewBuilder

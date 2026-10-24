@@ -136,7 +136,7 @@ class TimeZoneSearchCompiler: NSObject {
     private func searchPresets(query: String) -> [TimeZoneSearchResult] {
         let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !query.isEmpty else { return [] }
-        let keywords = ["Tibo time zone", "Tibo 时区", "Codex reset", "PST"]
+        let keywords = ["Tibo", "Seattle", "西雅图", "Codex reset", "PST", "PDT"]
         return keywords.contains { $0.localizedCaseInsensitiveContains(query) } ? [.tibo] : []
     }
 
@@ -180,11 +180,11 @@ class TimeZoneSearchCompiler: NSObject {
 }
 
 struct TimeZoneSearchResult: Identifiable, Equatable {
-    // A fixed offset is intentional: Los Angeles switches to PDT in summer.
+    // Tibo resides in Seattle (America/Los_Angeles), switching between PST and PDT via tzdata.
     static let tibo = TimeZoneSearchResult(
         title: "Tibo",
-        subtitle: "Codex reset · PST (UTC−08:00, year-round)",
-        identifier: "Etc/GMT+8",
+        subtitle: "Seattle · America/Los_Angeles",
+        identifier: "America/Los_Angeles",
         type: .preset,
         region: nil,
         coordinate: nil
