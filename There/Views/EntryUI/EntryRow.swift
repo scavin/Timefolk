@@ -196,7 +196,7 @@ struct EntryRow: View {
         }
         var cal = Calendar(identifier: .gregorian)
         if let tz = TimeZone(identifier: timeZoneIdentifier) { cal.timeZone = tz }
-        let cleanBaseDate = timeOffset != 0 ? (cal.date(bySetting: .second, value: 0, of: currentDate) ?? currentDate) : currentDate
+        let cleanBaseDate = timeOffset != 0 ? (cal.dateInterval(of: .minute, for: currentDate)?.start ?? currentDate) : currentDate
         let offsetDate = cleanBaseDate.addingTimeInterval(timeOffset * 3600)
         return formatter.string(from: offsetDate)
     }
@@ -499,7 +499,7 @@ struct LocalEntryRow: View {
         }
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = effectiveLocalTimeZone
-        let cleanBaseDate = timeOffset != 0 ? (cal.date(bySetting: .second, value: 0, of: currentDate) ?? currentDate) : currentDate
+        let cleanBaseDate = timeOffset != 0 ? (cal.dateInterval(of: .minute, for: currentDate)?.start ?? currentDate) : currentDate
         let offsetDate = cleanBaseDate.addingTimeInterval(timeOffset * 3600)
         return formatter.string(from: offsetDate)
     }
@@ -716,9 +716,9 @@ struct InlineTimeSlider: View {
                 Button {
                     var cal = Calendar(identifier: .gregorian)
                     if let tz = TimeZone(identifier: timeZoneIdentifier) { cal.timeZone = tz }
-                    let cleanCurrentDate = timeOffset != 0 ? (cal.date(bySetting: .second, value: 0, of: currentDate) ?? currentDate) : currentDate
+                    let cleanCurrentDate = timeOffset != 0 ? (cal.dateInterval(of: .minute, for: currentDate)?.start ?? currentDate) : currentDate
                     let rawEventDate = cleanCurrentDate.addingTimeInterval(timeOffset * 3600)
-                    let eventDate = cal.date(bySetting: .second, value: 0, of: rawEventDate) ?? rawEventDate
+                    let eventDate = cal.dateInterval(of: .minute, for: rawEventDate)?.start ?? rawEventDate
 
                     let isMe = anchorName == "我的时间" || anchorName.hasSuffix("(我)")
                     let eventTitle = isMe ? "Timefolk 规划日程" : "与 \(anchorName) 的日程"
@@ -841,13 +841,14 @@ struct InlineTimeSlider: View {
         specificDateDayStart = dayStart
         isSpecificDateMode = true
 
-        let currentHour = Double(cal.component(.hour, from: currentDate))
-        let currentMin = Double(cal.component(.minute, from: currentDate))
+        let baseDate = cal.dateInterval(of: .minute, for: currentDate)?.start ?? currentDate
+        let currentHour = Double(cal.component(.hour, from: baseDate))
+        let currentMin = Double(cal.component(.minute, from: baseDate))
         let initialHour = currentHour + (currentMin >= 30 ? 0.5 : 0.0)
         specificDateHour = initialHour
 
         let targetDate = dayStart.addingTimeInterval(initialHour * 3600)
-        timeOffset = targetDate.timeIntervalSince(currentDate) / 3600.0
+        timeOffset = targetDate.timeIntervalSince(baseDate) / 3600.0
         sliderValue = initialHour
         previousValue = initialHour
         performHapticFeedback()
@@ -855,9 +856,12 @@ struct InlineTimeSlider: View {
 
     private func updateSpecificDateOffset(for newHour: Double) {
         guard let dayStart = specificDateDayStart else { return }
+        var cal = Calendar(identifier: .gregorian)
+        if let tz = TimeZone(identifier: timeZoneIdentifier) { cal.timeZone = tz }
         specificDateHour = newHour
         let targetDate = dayStart.addingTimeInterval(newHour * 3600)
-        timeOffset = targetDate.timeIntervalSince(currentDate) / 3600.0
+        let baseDate = cal.dateInterval(of: .minute, for: currentDate)?.start ?? currentDate
+        timeOffset = targetDate.timeIntervalSince(baseDate) / 3600.0
     }
 
     private func syncSliderFromOffset() {
@@ -883,11 +887,10 @@ struct InlineTimeSlider: View {
             } else {
                 cal.timeZone = TimeZone.current
             }
-            let now = Date()
-            let cleanNow = cal.date(bySetting: .second, value: 0, of: now) ?? now
-            let startOfHour = cal.dateInterval(of: .hour, for: cleanNow)?.start ?? cleanNow
-            let target = cal.date(byAdding: .minute, value: Int(newSliderValue * 60), to: startOfHour) ?? cleanNow
-            timeOffset = target.timeIntervalSince(cleanNow) / 3600.0
+            let cleanBaseDate = cal.dateInterval(of: .minute, for: currentDate)?.start ?? currentDate
+            let startOfHour = cal.dateInterval(of: .hour, for: cleanBaseDate)?.start ?? cleanBaseDate
+            let target = cal.date(byAdding: .minute, value: Int(newSliderValue * 60), to: startOfHour) ?? cleanBaseDate
+            timeOffset = target.timeIntervalSince(cleanBaseDate) / 3600.0
         }
     }
 

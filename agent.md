@@ -23,7 +23,7 @@ Timefolk 是原生 macOS 菜单栏世界时钟，用来查看朋友、同事和�
 | App 入口 | `There/ThereApp.swift` 中的 `ThereApp` |
 | 应用产物、可执行文件 | `Timefolk.app`、`Timefolk` |
 | Bundle Identifier | `com.timefolk.Timefolk`（通过 `LegacyDataMigrator` 与 `ContainerMigration.plist` 兼容迁移 `pm.there.There` 旧数据） |
-| 应用版本 / Build | `2.2` / `4` |
+| 应用版本 / Build | `2.4` / `6` |
 | 默认构建与单元测试 Scheme | `There` |
 | 独立 UI 测试 Scheme | `There-UI` |
 | 应用最低系统版本 | macOS 13.5 |

@@ -9,8 +9,8 @@ struct AboutView: View {
     @Environment(\.openURL) private var openURL
 
     private var versionString: String {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "2.3"
-        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "5"
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "2.4"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "6"
         return "版本 \(version) (\(build))"
     }
 

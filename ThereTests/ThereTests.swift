@@ -95,5 +95,31 @@ struct ThereTests {
             #expect(results.contains { $0.identifier == "America/Los_Angeles" })
         }
     }
+
+    @Test func timeTravelSnappingNeverProduces59Minutes() {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "Asia/Shanghai")!
+
+        // Test across various second and millisecond values
+        for sec in [0, 1, 15, 30, 45, 59] {
+            for ms in [0.0, 150.0, 500.0, 999.0] {
+                let now = Date(timeIntervalSince1970: 1700000000.0 + Double(sec) + (ms / 1000.0))
+                let cleanBaseDate = cal.dateInterval(of: .minute, for: now)?.start ?? now
+                let startOfHour = cal.dateInterval(of: .hour, for: cleanBaseDate)?.start ?? cleanBaseDate
+
+                for sliderHour in [-48.0, -1.0, 0.5, 1.0, 8.5, 24.0] {
+                    let target = cal.date(byAdding: .minute, value: Int(sliderHour * 60), to: startOfHour) ?? cleanBaseDate
+                    let timeOffset = target.timeIntervalSince(cleanBaseDate) / 3600.0
+
+                    let offsetDate = cleanBaseDate.addingTimeInterval(timeOffset * 3600)
+                    let minute = cal.component(.minute, from: offsetDate)
+                    let second = cal.component(.second, from: offsetDate)
+
+                    #expect(second == 0)
+                    #expect(minute == 0 || minute == 30)
+                }
+            }
+        }
+    }
 }
 
